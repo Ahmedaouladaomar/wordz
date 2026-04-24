@@ -1,0 +1,71 @@
+# Node
+**/node_modules/
+**/.pnp/
+**/.pnp.js
+**/.pnp.cjs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+.envrc
+.local
+.DS_Store
+
+# Build / output
+**/dist/
+**/build/
+**/tmp/
+**/out/
+**/coverage/
+*.tsbuildinfo
+
+# NestJS backend
+backend/nestjs-debug.log
+**/nestjs-debug.log
+
+# React Native / mobile
+mobile/android/app/build/
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/.idea/
+mobile/android/.cxx/
+mobile/android/.externalNativeBuild/
+mobile/android/gradle-wrapper.jar
+mobile/android/gradle-wrapper.properties
+mobile/android/gradle/
+mobile/android/app/*.keystore
+
+mobile/ios/Pods/
+mobile/ios/build/
+mobile/ios/DerivedData/
+mobile/ios/*.xcworkspace/
+mobile/ios/*.xcuserdata/
+mobile/ios/*.lock
+mobile/ios/Flutter/Flutter.framework/
+mobile/ios/Flutter/Flutter.podspec
+mobile/ios/ServiceDefinitions.json
+
+# Expo / Metro
+mobile/.expo/
+mobile/.expo-shared/
+mobile/.expo-local/
+mobile/metro-cache/
+mobile/react-native/packager-cache-*
+mobile/react-native-builder-bundle/
+mobile/*.log
+mobile/*.tmp
+
+# IDEs / editors
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.iml
+
+# Misc
+.cache/
