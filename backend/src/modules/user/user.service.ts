@@ -2,10 +2,12 @@ import { Injectable, ConflictException, NotFoundException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto'; // Ensure you create this DTO
 import { ApiConfigService } from '@/shared/services/api-config.service';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class UserService {
@@ -13,6 +15,7 @@ export class UserService {
     private readonly configService: ApiConfigService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly emailService: EmailService,
   ) {}
 
   /**
@@ -27,8 +30,12 @@ export class UserService {
     }
 
     const user = this.userRepository.create(createUserDto);
+    const savedUser = await this.userRepository.save(user);
 
-    return await this.userRepository.save(user);
+    // Send verification email
+    await this.sendVerificationEmail(savedUser);
+
+    return savedUser;
   }
 
   /**
@@ -76,7 +83,7 @@ export class UserService {
   }
 
   /**
-   * DELETE: Remove a user and their related data
+   * Remove a user and their related data
    */
   async remove(id: string): Promise<void> {
     const user = await this.findOne(id);
@@ -84,7 +91,7 @@ export class UserService {
   }
 
   /**
-   * SPECIFIC: Update only the daily target
+   * Update only the daily target
    */
   async updateDailyTarget(id: string, target: number): Promise<User> {
     const user = await this.findOne(id);
@@ -101,5 +108,33 @@ export class UserService {
       .where('user.email = :email', { email })
       .addSelect('user.password')
       .getOne();
+  }
+
+  /**
+   * Send email verification
+   */
+  async sendVerificationEmail(user: User): Promise<void> {
+    const token = crypto.randomBytes(32).toString('hex');
+    user.emailVerificationToken = token;
+    await this.userRepository.save(user);
+
+    const verificationLink = `${this.configService.appConfig.frontendUrl}/verify-email?token=${token}`;
+    await this.emailService.sendVerificationEmail(
+      user.email,
+      `${user.firstName} ${user.lastName}`,
+      verificationLink,
+    );
+  }
+
+  async findByEmailVerificationToken(token: string): Promise<User | null> {
+    return await this.userRepository.findOne({ where: { emailVerificationToken: token } });
+  }
+
+  async findByPasswordResetToken(token: string): Promise<User | null> {
+    return await this.userRepository.findOne({ where: { passwordResetToken: token } });
+  }
+
+  async save(user: User): Promise<User> {
+    return await this.userRepository.save(user);
   }
 }

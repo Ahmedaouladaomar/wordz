@@ -7,11 +7,13 @@ import { AccessTokenStrategy } from './strategies/access-token.strategy';
 import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
 import { ApiConfigService } from '@/shared/services/api-config.service';
 import { UserModule } from '../user/user.module';
+import { EmailModule } from '../email/email.module';
 import { SessionModule } from '../session/session.module';
 
 @Module({
   imports: [
     UserModule,
+    EmailModule,
     SessionModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     // Async registration to inject our ConfigService

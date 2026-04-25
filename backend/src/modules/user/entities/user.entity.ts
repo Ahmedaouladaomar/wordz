@@ -4,8 +4,8 @@ import { Vocabulary } from '../../vocabulary/entities/vocabulary.entity';
 import { Practice } from '@/modules/practice/entities/practice.entity';
 import { RefreshToken } from '@/modules/session/entities/refresh-token.entity';
 import { Session } from '@/modules/session/entities/session.entity';
-import { RoleType } from '@/constants/role-type';
 import { Exclude } from 'class-transformer';
+import { RoleType } from '@/constants/role-type';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -18,6 +18,9 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   lastName!: string;
 
+  @Column({ type: 'enum', nullable: false, enum: RoleType, default: RoleType.USER })
+  role!: RoleType;
+
   @Exclude()
   @Column({ type: 'varchar', nullable: false })
   password!: string;
@@ -25,11 +28,17 @@ export class User extends BaseEntity {
   @Column({ default: 5 })
   dailyTarget!: number;
 
-  @Column({ type: 'enum', enum: RoleType, default: RoleType.USER })
-  role!: RoleType;
+  @Column({ default: false })
+  isEmailVerified!: boolean;
 
-  @Column()
-  city?: string;
+  @Column({ type: 'varchar', nullable: true })
+  emailVerificationToken?: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  passwordResetToken?: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  passwordResetExpires?: Date;
 
   @Column()
   address?: string;

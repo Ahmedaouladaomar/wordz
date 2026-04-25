@@ -97,9 +97,17 @@ export class ApiConfigService {
     };
   }
 
+  get emailConfig() {
+    return {
+      resendApiKey: this.getString('RESEND_API_KEY'),
+      emailFrom: this.getString('EMAIL_FROM'),
+    };
+  }
+
   get appConfig() {
     return {
       port: this.getString('PORT'),
+      frontendUrl: this.getString('FRONTEND_URL'),
     };
   }
 

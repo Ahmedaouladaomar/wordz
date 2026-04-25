@@ -1,9 +1,16 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ApiConfigService } from '@/shared/services/api-config.service';
 import { UserService } from '../user/user.service';
 import { SessionService } from '../session/session.service';
+import { EmailService } from '../email/email.service';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
@@ -13,6 +20,7 @@ export class AuthService {
     private sessionService: SessionService,
     private jwtService: JwtService,
     private configService: ApiConfigService,
+    private emailService: EmailService,
   ) {}
 
   /**
@@ -67,6 +75,52 @@ export class AuthService {
 
     // Log them in immediately by creating a session
     return this.login(user.email, registerDto.password, userAgent);
+  }
+
+  async verifyEmail(email: string, token: string) {
+    const user = await this.userService.findByEmail(email);
+    const isMatch = token === user?.emailVerificationToken;
+    if (!user || !isMatch) {
+      throw new BadRequestException('Invalid verification token');
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    return this.userService.save(user);
+  }
+
+  async requestPasswordReset(email: string): Promise<void> {
+    const user = await this.userService.findByEmail(email);
+    if (!user) {
+      return;
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    user.passwordResetToken = token;
+    user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 5); // Expires in 5 minutes
+    await this.userService.save(user);
+
+    const resetLink = `${this.configService.appConfig.frontendUrl}/reset-password?token=${token}`;
+    await this.emailService.sendPasswordRecoveryEmail(
+      user.email,
+      `${user.firstName} ${user.lastName}`,
+      resetLink,
+    );
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const user = await this.userService.findByPasswordResetToken(token);
+    if (!user || !user.passwordResetExpires || user.passwordResetExpires < new Date()) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    const { saltRounds } = this.configService.bcryptConfig;
+    const salt = await bcrypt.genSalt(saltRounds);
+    user.password = await bcrypt.hash(newPassword, salt);
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+
+    return this.userService.save(user);
   }
 
   /**

@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { PracticeService } from './practice.service';
 import { CreatePracticeDto } from './dto/create-practice.dto';
 import { UpdatePracticeDto } from './dto/update-practice.dto';
+import { AuthGuard } from '@/guards/auth.guard';
 
+@UseGuards(AuthGuard())
 @Controller('practice')
 export class PracticeController {
   constructor(private readonly practiceService: PracticeService) {}

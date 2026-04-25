@@ -1,8 +1,8 @@
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import type { RoleType } from '../constants/role-type.ts';
-import { User } from '@/modules/user/entities/user.entity.js';
+import type { RoleType } from '../constants/role-type';
+import { User } from '@/modules/user/entities/user.entity';
 
 const ROLES_KEY = 'roles';
 

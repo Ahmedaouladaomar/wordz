@@ -15,6 +15,7 @@ import { SessionModule } from './modules/session/session.module';
 // Shared/Config
 import { ApiConfigService } from './shared/services/api-config.service';
 import { SharedModule } from './shared/shared.module';
+import { EmailModule } from './modules/email/email.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { SharedModule } from './shared/shared.module';
     VocabularyModule,
     AuthModule,
     SessionModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
