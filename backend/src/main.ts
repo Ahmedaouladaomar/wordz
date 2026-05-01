@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import cookieParser from 'cookie-parser';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { ApiConfigService } from './shared/services/api-config.service';
 
@@ -10,11 +9,15 @@ async function bootstrap() {
   const configService = app.get(ApiConfigService);
   const port = configService.appConfig.port || 4000;
 
+  app.enableCors({
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  });
+
   const transformInterceptor = new TransformInterceptor();
 
   app.useGlobalInterceptors(transformInterceptor);
-  app.use(cookieParser());
 
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 }
 bootstrap();

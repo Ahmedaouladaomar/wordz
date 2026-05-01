@@ -29,7 +29,9 @@ export class UserService {
       throw new ConflictException('A user with this email already exists.');
     }
 
+    // Creating enew entity instance
     const user = this.userRepository.create(createUserDto);
+    // Saving entity to DB
     const savedUser = await this.userRepository.save(user);
 
     // Send verification email

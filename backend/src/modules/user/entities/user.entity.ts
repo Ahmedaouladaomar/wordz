@@ -40,8 +40,11 @@ export class User extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   passwordResetExpires?: Date;
 
-  @Column()
+  @Column({ type: 'varchar', nullable: true })
   address?: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  city?: string;
 
   @OneToMany(() => RefreshToken, (rt) => rt.user)
   refreshTokens?: RefreshToken[];

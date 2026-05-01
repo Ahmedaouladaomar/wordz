@@ -9,16 +9,16 @@ import { ApiConfigService } from '@/shared/services/api-config.service';
 export class RefreshTokenStrategy extends PassportStrategy(Strategy, TokenType.REFRESH_TOKEN) {
   constructor(configService: ApiConfigService) {
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([
-        (request: Request) => request?.cookies?.refreshToken,
-      ]),
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: configService.authConfig.refreshKey,
       passReqToCallback: true,
     } as StrategyOptionsWithRequest);
   }
 
   validate(req: Request, payload: { sub: string; sessionId: string }) {
-    const refreshToken: string = req.cookies?.refreshToken as string;
+    const refreshHeader = req.headers.authorization as string;
+    const refreshToken = refreshHeader?.split(' ')[1];
+
     return {
       userId: payload.sub,
       sessionId: payload.sessionId,

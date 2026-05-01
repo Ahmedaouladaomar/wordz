@@ -1,4 +1,3 @@
-// auth/dto/auth-user.dto.ts
 import { RoleType } from '@/constants/role-type';
 
 export class AuthUserDto {
