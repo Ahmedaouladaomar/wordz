@@ -41,8 +41,8 @@ export class EmailService {
     await this.sendEmail(to, template);
   }
 
-  async sendPasswordRecoveryEmail(to: string, name: string, resetLink: string) {
-    const template = new PasswordRecoveryTemplate(name, resetLink);
+  async sendPasswordRecoveryEmail(to: string, name: string, code: string) {
+    const template = new PasswordRecoveryTemplate(name, code);
     await this.sendEmail(to, template);
   }
 }

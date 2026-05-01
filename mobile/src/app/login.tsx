@@ -1,5 +1,5 @@
 import { Stack, useRouter } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Alert, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 
 import { ThemedText } from "@/components/themed-text";

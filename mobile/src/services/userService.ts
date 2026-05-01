@@ -1,46 +1,82 @@
+import { ApiResponse } from "@/types/api";
+import { PasswordResetPayload, User, UserUpdatePayload } from "@/types/user";
+import { AxiosInstance } from "axios";
 import apiClient from "../api/client";
 
-// Query keys for user-related queries
+// Query keys for React Query / TanStack Query
 export const userQueryKeys = {
   all: ["users"] as const,
   profile: (userId: string) =>
     [...userQueryKeys.all, "profile", userId] as const,
 };
 
-// Service class for user-related API operations
-export class UserService {
-  // Read: Get user profile
-  static async getUser(userId: string) {
-    const response = await apiClient.get(`/users/${userId}`);
-    return response.data;
+class UserService {
+  private http: AxiosInstance;
+
+  constructor(instance: AxiosInstance) {
+    this.http = instance;
   }
 
-  // Update: Update user profile
-  static async updateUser(userId: string, data: any) {
-    const response = await apiClient.put(`/users/${userId}`, data);
-    return response.data;
+  /**
+   * Get user profile by ID
+   */
+  async getUser(userId: string): Promise<ApiResponse<User>> {
+    const { data } = await this.http.get<ApiResponse<User>>(`/users/${userId}`);
+    return data;
   }
 
-  // Delete: Delete user
-  static async deleteUser(userId: string) {
-    const response = await apiClient.delete(`/users/${userId}`);
-    return response.data;
+  /**
+   * Update user profile data
+   */
+  async updateUser(
+    userId: string,
+    payload: UserUpdatePayload,
+  ): Promise<ApiResponse<User>> {
+    const { data } = await this.http.put<ApiResponse<User>>(
+      `/users/${userId}`,
+      payload,
+    );
+    return data;
   }
 
-  // Password reset: Request password reset
-  static async requestPasswordReset(email: string) {
-    const response = await apiClient.post("/auth/request-password-reset", {
-      email,
-    });
-    return response.data;
+  /**
+   * Permanently delete user account
+   */
+  async deleteUser(userId: string): Promise<ApiResponse<{ success: boolean }>> {
+    const { data } = await this.http.delete<ApiResponse<{ success: boolean }>>(
+      `/users/${userId}`,
+    );
+    return data;
   }
 
-  // Password reset: Reset password with token
-  static async resetPassword(token: string, newPassword: string) {
-    const response = await apiClient.post("/auth/reset-password", {
-      token,
-      newPassword,
-    });
-    return response.data;
+  /**
+   * Request a password reset email
+   */
+  async requestPasswordReset(
+    email: string,
+  ): Promise<ApiResponse<{ message: string }>> {
+    const { data } = await this.http.post<ApiResponse<{ message: string }>>(
+      "/auth/request-password-reset",
+      {
+        email,
+      },
+    );
+    return data;
+  }
+
+  /**
+   * Submit new password using the token received via email
+   */
+  async resetPassword(
+    payload: PasswordResetPayload,
+  ): Promise<ApiResponse<{ success: boolean }>> {
+    const { data } = await this.http.post<ApiResponse<{ success: boolean }>>(
+      "/auth/reset-password",
+      payload,
+    );
+    return data;
   }
 }
+
+// Export a single instance to be used throughout the app
+export const userService = new UserService(apiClient);

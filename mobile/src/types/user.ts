@@ -17,3 +17,8 @@ export interface UserCreatePayload {
 }
 
 export type UserUpdatePayload = Partial<UserCreatePayload>;
+
+export interface PasswordResetPayload {
+  token: string;
+  newPassword: string;
+}

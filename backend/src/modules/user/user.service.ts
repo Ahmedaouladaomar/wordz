@@ -132,8 +132,8 @@ export class UserService {
     return await this.userRepository.findOne({ where: { emailVerificationToken: token } });
   }
 
-  async findByPasswordResetToken(token: string): Promise<User | null> {
-    return await this.userRepository.findOne({ where: { passwordResetToken: token } });
+  async findByPasswordResetCode(code: string): Promise<User | null> {
+    return await this.userRepository.findOne({ where: { passwordResetCode: code } });
   }
 
   async save(user: User): Promise<User> {

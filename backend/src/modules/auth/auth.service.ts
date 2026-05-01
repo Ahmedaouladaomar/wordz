@@ -10,7 +10,6 @@ import { UserService } from '../user/user.service';
 import { SessionService } from '../session/session.service';
 import { EmailService } from '../email/email.service';
 import * as bcrypt from 'bcrypt';
-import * as crypto from 'crypto';
 import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
@@ -95,30 +94,30 @@ export class AuthService {
       return;
     }
 
-    const token = crypto.randomBytes(32).toString('hex');
-    user.passwordResetToken = token;
-    user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 5); // Expires in 5 minutes
+    // Generate a 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    user.passwordResetCode = code;
+    user.passwordResetCodeExpires = new Date(Date.now() + 15 * 60 * 1000); // Expires in 15 minutes
     await this.userService.save(user);
 
-    const resetLink = `${this.configService.appConfig.frontendUrl}/reset-password?token=${token}`;
     await this.emailService.sendPasswordRecoveryEmail(
       user.email,
       `${user.firstName} ${user.lastName}`,
-      resetLink,
+      code,
     );
   }
 
-  async resetPassword(token: string, newPassword: string) {
-    const user = await this.userService.findByPasswordResetToken(token);
-    if (!user || !user.passwordResetExpires || user.passwordResetExpires < new Date()) {
-      throw new BadRequestException('Invalid or expired reset token');
+  async resetPassword(code: string, newPassword: string) {
+    const user = await this.userService.findByPasswordResetCode(code);
+    if (!user || !user.passwordResetCodeExpires || user.passwordResetCodeExpires < new Date()) {
+      throw new BadRequestException('Invalid or expired reset code');
     }
 
     const { saltRounds } = this.configService.bcryptConfig;
     const salt = await bcrypt.genSalt(saltRounds);
     user.password = await bcrypt.hash(newPassword, salt);
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
+    user.passwordResetCode = undefined;
+    user.passwordResetCodeExpires = undefined;
 
     return this.userService.save(user);
   }

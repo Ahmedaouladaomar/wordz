@@ -54,6 +54,7 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() registerDto: RegisterDto, @Headers('user-agent') userAgent: string) {
+    console.log(registerDto);
     return this.authService.register(registerDto, userAgent);
   }
 
@@ -77,7 +78,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return await this.authService.resetPassword(
-      resetPasswordDto.token,
+      resetPasswordDto.code,
       resetPasswordDto.newPassword,
     );
   }

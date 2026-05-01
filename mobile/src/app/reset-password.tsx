@@ -10,13 +10,16 @@ export default function ResetPasswordScreen() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const router = useRouter();
-  const { token } = useLocalSearchParams<{ token: string }>();
-  const { resetPassword, isLoading } = useAuth();
+  const { email, code } = useLocalSearchParams<{
+    email: string;
+    code: string;
+  }>();
+  const { resetPasswordWithCode, isLoading } = useAuth();
 
   const handleResetPassword = async () => {
-    if (!token) {
-      Alert.alert("Error", "Invalid reset link. Please request a new one.");
-      router.replace("/login");
+    if (!email || !code) {
+      Alert.alert("Error", "Invalid reset request. Please try again.");
+      router.replace("/forgot-password");
       return;
     }
 
@@ -35,14 +38,14 @@ export default function ResetPasswordScreen() {
       return;
     }
 
-    const success = await resetPassword(token, newPassword);
+    const success = await resetPasswordWithCode(email, code, newPassword);
     if (success) {
       Alert.alert("Success", "Your password has been reset successfully");
       router.replace("/login");
     } else {
       Alert.alert(
         "Error",
-        "Failed to reset password. The link may have expired. Please request a new one.",
+        "Failed to reset password. The code may have expired. Please request a new one.",
       );
     }
   };

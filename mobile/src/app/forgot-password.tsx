@@ -21,9 +21,12 @@ export default function ForgotPasswordScreen() {
     if (success) {
       Alert.alert(
         "Success",
-        "If an account exists with this email, you will receive a password reset link shortly.",
+        "If an account exists with this email, you will receive a 6-digit code shortly.",
       );
-      router.replace("/login");
+      router.push({
+        pathname: "/verify-reset-code",
+        params: { email },
+      });
     } else {
       Alert.alert(
         "Error",
@@ -46,8 +49,8 @@ export default function ForgotPasswordScreen() {
           Forgot Password
         </ThemedText>
         <ThemedText style={styles.subtitle}>
-          Enter your email address and we&apos;ll send you a link to reset your
-          password.
+          Enter your email address and we&apos;ll send you a 6-digit code to
+          reset your password.
         </ThemedText>
         <TextInput
           style={styles.input}
@@ -65,7 +68,7 @@ export default function ForgotPasswordScreen() {
           disabled={isLoading}
         >
           <ThemedText style={styles.buttonText}>
-            {isLoading ? "Sending..." : "Send Reset Link"}
+            {isLoading ? "Sending..." : "Send Code"}
           </ThemedText>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleBackToLogin} disabled={isLoading}>

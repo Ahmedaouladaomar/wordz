@@ -6,7 +6,7 @@ export class PasswordRecoveryTemplate extends BaseEmailTemplate {
 
   constructor(
     private name: string,
-    private resetLink: string,
+    private code: string,
   ) {
     super();
   }
@@ -14,7 +14,7 @@ export class PasswordRecoveryTemplate extends BaseEmailTemplate {
   protected templateContext(): Record<string, unknown> {
     return {
       name: this.name,
-      resetLink: this.resetLink,
+      code: this.code,
     };
   }
 }

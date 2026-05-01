@@ -35,10 +35,10 @@ export class User extends BaseEntity {
   emailVerificationToken?: string;
 
   @Column({ type: 'varchar', nullable: true })
-  passwordResetToken?: string;
+  passwordResetCode?: string;
 
   @Column({ type: 'timestamp', nullable: true })
-  passwordResetExpires?: Date;
+  passwordResetCodeExpires?: Date;
 
   @Column({ type: 'varchar', nullable: true })
   address?: string;

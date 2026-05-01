@@ -1,9 +1,10 @@
-import { IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsNotEmpty, IsString, MinLength, Matches } from 'class-validator';
 
 export class ResetPasswordDto {
   @IsString()
   @IsNotEmpty()
-  token!: string;
+  @Matches(/^\d{6}$/, { message: 'Code must be exactly 6 digits' })
+  code!: string;
 
   @IsString()
   @IsNotEmpty()

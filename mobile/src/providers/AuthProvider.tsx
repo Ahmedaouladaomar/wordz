@@ -1,4 +1,4 @@
-import apiClient from "@/api/client";
+import { authService } from "@/services/authService";
 import { useAuthStore } from "@/store/auth-store";
 import type { User, UserCreatePayload } from "@/types/user";
 import React, { createContext, useContext, useEffect } from "react";
@@ -12,6 +12,12 @@ interface AuthContextType {
   register: (userCreatePayload: UserCreatePayload) => Promise<boolean>;
   logout: () => Promise<void>;
   requestPasswordReset: (email: string) => Promise<boolean>;
+  verifyResetCode: (email: string, code: string) => Promise<boolean>;
+  resetPasswordWithCode: (
+    email: string,
+    code: string,
+    newPassword: string,
+  ) => Promise<boolean>;
   resetPassword: (token: string, newPassword: string) => Promise<boolean>;
 }
 
@@ -36,9 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const token = await StorageHelper.get<string>(StorageKeys.ACCESS_TOKEN);
         if (token) {
           try {
-            const { data } = await apiClient.get("/auth/me");
+            const response = await authService.getMe();
             if (!mounted) return;
-            setUser(data);
+            setUser(response.data as User);
           } catch {
             if (!mounted) return;
             await StorageHelper.removeItem(StorageKeys.ACCESS_TOKEN);
@@ -65,15 +71,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setLoading(true);
-      const { data } = await apiClient.post("/auth/login", {
+      const response = await authService.login({
         email,
         password,
       });
 
       // Session data
-      const accessToken = data?.accessToken;
-      const refreshToken = data?.refreshToken;
-      const user = data?.user;
+      const accessToken = response.data?.accessToken;
+      const refreshToken = response.data?.refreshToken;
+      const user = response.data?.user as User;
 
       if (accessToken && refreshToken) {
         // Setting tokens on store
@@ -97,16 +103,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   ): Promise<boolean> => {
     try {
       setLoading(true);
-      const { data } = await apiClient.post("/auth/register", {
-        emai: userCreatePayload.email,
-        password: userCreatePayload.password,
-        firstName: userCreatePayload.firstName,
-        lastName: userCreatePayload.lastName,
-      });
-      const token = data.token || data.accessToken;
-      const user = data.user || data;
-      if (token) {
+      const response = await authService.register(userCreatePayload);
+      const token = response.data?.accessToken;
+      const refreshToken = response.data?.refreshToken;
+      const user = response.data?.user as User;
+
+      if (token && refreshToken) {
+        setAccessToken(token);
+        setRefreshToken(refreshToken);
         await StorageHelper.save(StorageKeys.ACCESS_TOKEN, token);
+        await StorageHelper.save(StorageKeys.REFRESH_TOKEN, refreshToken);
       }
       setUser(user);
       return true;
@@ -119,9 +125,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await apiClient.post("/auth/logout");
+      await authService.logout();
     } finally {
       await StorageHelper.removeItem(StorageKeys.ACCESS_TOKEN);
+      await StorageHelper.removeItem(StorageKeys.REFRESH_TOKEN);
       setUser(null);
     }
   };
@@ -129,7 +136,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const requestPasswordReset = async (email: string): Promise<boolean> => {
     try {
       setLoading(true);
-      await apiClient.post("/auth/request-password-reset", { email });
+      await authService.requestPasswordReset(email);
+      return true;
+    } catch {
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyResetCode = async (
+    email: string,
+    code: string,
+  ): Promise<boolean> => {
+    try {
+      setLoading(true);
+      await authService.verifyResetCode({ email, code });
+      return true;
+    } catch {
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetPasswordWithCode = async (
+    email: string,
+    code: string,
+    newPassword: string,
+  ): Promise<boolean> => {
+    try {
+      setLoading(true);
+      await authService.resetPasswordWithCode({
+        email,
+        code,
+        newPassword,
+      });
       return true;
     } catch {
       return false;
@@ -144,10 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   ): Promise<boolean> => {
     try {
       setLoading(true);
-      await apiClient.post("/auth/reset-password", {
-        token,
-        newPassword,
-      });
+      await authService.resetPassword(token, newPassword);
       return true;
     } catch {
       return false;
@@ -166,6 +205,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         register,
         logout,
         requestPasswordReset,
+        verifyResetCode,
+        resetPasswordWithCode,
         resetPassword,
       }}
     >
