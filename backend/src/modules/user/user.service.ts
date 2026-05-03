@@ -2,7 +2,6 @@ import { Injectable, ConflictException, NotFoundException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import * as crypto from 'crypto';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto'; // Ensure you create this DTO
@@ -116,24 +115,19 @@ export class UserService {
    * Send email verification
    */
   async sendVerificationEmail(user: User): Promise<void> {
-    const token = crypto.randomBytes(32).toString('hex');
-    user.emailVerificationToken = token;
+    // Generate a 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    user.emailVerificationCode = code;
+    user.emailVerificationCodeExpires = new Date(Date.now() + 15 * 60 * 1000); // Expires in 15 minutes
+
     await this.userRepository.save(user);
 
-    const verificationLink = `${this.configService.appConfig.frontendUrl}/verify-email?token=${token}`;
     await this.emailService.sendVerificationEmail(
       user.email,
       `${user.firstName} ${user.lastName}`,
-      verificationLink,
+      code,
     );
-  }
-
-  async findByEmailVerificationToken(token: string): Promise<User | null> {
-    return await this.userRepository.findOne({ where: { emailVerificationToken: token } });
-  }
-
-  async findByPasswordResetCode(code: string): Promise<User | null> {
-    return await this.userRepository.findOne({ where: { passwordResetCode: code } });
   }
 
   async save(user: User): Promise<User> {

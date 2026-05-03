@@ -61,9 +61,13 @@ export default function RegisterScreen() {
     };
 
     const success = await register(payload);
+
     if (success) {
-      Alert.alert("Success", `Account created for ${data.email}!`);
-      router.replace("/home" as any);
+      Alert.alert("Success", `Verification code sent to ${data.email}!`);
+      router.replace({
+        pathname: "/verify-email",
+        params: { email: data.email },
+      });
     } else {
       Alert.alert("Error", "Registration failed. Please try again.");
     }

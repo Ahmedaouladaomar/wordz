@@ -11,6 +11,8 @@ import { SessionService } from '../session/session.service';
 import { EmailService } from '../email/email.service';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
+import { User } from '../user/entities/user.entity';
+import { ResetPasswordDto } from '../user/dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -36,7 +38,33 @@ export class AuthService {
     const isMatch = await bcrypt.compare(pass, user.password);
     if (!isMatch) throw new UnauthorizedException();
 
-    // Create a new session entry in DB for this specific device
+    if (!user.isEmailVerified) throw new BadRequestException('Please verify email!');
+
+    return this.createAuthenticatedSession(user, userAgent);
+  }
+
+  /**
+   * @description Registers a new user
+   * @param registerDto
+   * @returns
+   */
+  async register(registerDto: RegisterDto) {
+    // Check if user already exists
+    const existingUser = await this.userService.findByEmail(registerDto.email);
+    if (existingUser) {
+      throw new ConflictException('User already exists');
+    }
+
+    // Create the user in the database
+    await this.userService.create(registerDto);
+
+    return true;
+  }
+
+  /**
+   * SHARED HELPER: Handles session DB entry and JWT generation
+   */
+  private async createAuthenticatedSession(user: User, userAgent: string) {
     const session = await this.sessionService.create(user.id, userAgent);
 
     const { accessToken, refreshToken } = await this.generateTokens(
@@ -45,50 +73,39 @@ export class AuthService {
       session.id,
     );
 
-    // Store the initial token for this session
     await this.sessionService.updateRefreshToken(session.id, refreshToken);
 
     return {
       accessToken,
       refreshToken,
       user,
-      sessionId: session.id, // We store this in the JWT payload for rotation
+      sessionId: session.id,
     };
   }
 
-  /**
-   * @description Registers a new user and logs them in immediately
-   * @param registerDto
-   * @param userAgent
-   * @returns
-   */
-  async register(registerDto: RegisterDto, userAgent: string) {
-    // Check if user already exists
-    const existingUser = await this.userService.findByEmail(registerDto.email);
-    if (existingUser) {
-      throw new ConflictException('User already exists');
-    }
-
-    // Create the user in the database
-    const user = await this.userService.create(registerDto);
-
-    // Log them in immediately by creating a session
-    return this.login(user.email, registerDto.password, userAgent);
-  }
-
-  async verifyEmail(email: string, token: string) {
+  async verifyEmail(email: string, code: string, userAgent: string) {
     const user = await this.userService.findByEmail(email);
-    const isMatch = token === user?.emailVerificationToken;
-    if (!user || !isMatch) {
-      throw new BadRequestException('Invalid verification token');
+
+    const isValid =
+      user &&
+      user.emailVerificationCodeExpires &&
+      new Date() < user.emailVerificationCodeExpires &&
+      code === user?.emailVerificationCode;
+
+    if (!isValid) {
+      throw new BadRequestException('Invalid verification code');
     }
 
     user.isEmailVerified = true;
-    user.emailVerificationToken = undefined;
-    return this.userService.save(user);
+    user.emailVerificationCode = undefined;
+    user.emailVerificationCodeExpires = undefined;
+
+    await this.userService.save(user);
+
+    return await this.createAuthenticatedSession(user, userAgent);
   }
 
-  async requestPasswordReset(email: string): Promise<void> {
+  async requestResetPassword(email: string): Promise<void> {
     const user = await this.userService.findByEmail(email);
     if (!user) {
       return;
@@ -107,19 +124,34 @@ export class AuthService {
     );
   }
 
-  async resetPassword(code: string, newPassword: string) {
-    const user = await this.userService.findByPasswordResetCode(code);
-    if (!user || !user.passwordResetCodeExpires || user.passwordResetCodeExpires < new Date()) {
+  async verifyResetPasswordCode(email: string, code: string): Promise<User> {
+    const user = await this.userService.findByEmail(email);
+
+    if (
+      !user ||
+      !user.passwordResetCodeExpires ||
+      user.passwordResetCodeExpires < new Date() ||
+      user.passwordResetCode !== code
+    ) {
       throw new BadRequestException('Invalid or expired reset code');
     }
 
+    // Elswise we return user
+    return user;
+  }
+
+  async resetPassword(resetPassworDto: ResetPasswordDto, userAgent: string) {
+    const user = await this.verifyResetPasswordCode(resetPassworDto.email, resetPassworDto.code);
+
     const { saltRounds } = this.configService.bcryptConfig;
     const salt = await bcrypt.genSalt(saltRounds);
-    user.password = await bcrypt.hash(newPassword, salt);
+    user.password = await bcrypt.hash(resetPassworDto.newPassword, salt);
     user.passwordResetCode = undefined;
     user.passwordResetCodeExpires = undefined;
 
-    return this.userService.save(user);
+    const savedUser = await this.userService.save(user);
+
+    return this.createAuthenticatedSession(savedUser, userAgent);
   }
 
   /**

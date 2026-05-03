@@ -38,7 +38,7 @@ export default function ResetPasswordScreen() {
       return;
     }
 
-    const success = await resetPasswordWithCode(email, code, newPassword);
+    const success = await resetPasswordWithCode({ email, code, newPassword });
     if (success) {
       Alert.alert("Success", "Your password has been reset successfully");
       router.replace("/login");

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { UserService, userQueryKeys } from "../services/userService";
+import { userQueryKeys, userService } from "../services/userService";
 
 /**
  * Hook to fetch user profile data
@@ -7,7 +7,7 @@ import { UserService, userQueryKeys } from "../services/userService";
 export function useUserProfile(userId: string) {
   return useQuery({
     queryKey: userQueryKeys.profile(userId),
-    queryFn: () => UserService.getUser(userId),
+    queryFn: () => userService.getUser(userId),
     enabled: !!userId, // Only run query if userId exists
   });
 }
@@ -20,7 +20,7 @@ export function useUpdateUserProfile() {
 
   return useMutation({
     mutationFn: ({ userId, data }: { userId: string; data: any }) =>
-      UserService.updateUser(userId, data),
+      userService.updateUser(userId, data),
     onSuccess: (data, variables) => {
       // Invalidate and refetch user profile data
       queryClient.invalidateQueries({
@@ -37,7 +37,7 @@ export function useDeleteUser() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (userId: string) => UserService.deleteUser(userId),
+    mutationFn: (userId: string) => userService.deleteUser(userId),
     onSuccess: (data, userId) => {
       // Invalidate user queries
       queryClient.invalidateQueries({

@@ -32,7 +32,10 @@ export class User extends BaseEntity {
   isEmailVerified!: boolean;
 
   @Column({ type: 'varchar', nullable: true })
-  emailVerificationToken?: string;
+  emailVerificationCode?: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  emailVerificationCodeExpires?: Date;
 
   @Column({ type: 'varchar', nullable: true })
   passwordResetCode?: string;
@@ -46,15 +49,15 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   city?: string;
 
-  @OneToMany(() => RefreshToken, (rt) => rt.user)
+  @OneToMany(() => RefreshToken, (rt) => rt.user, { onDelete: 'CASCADE' })
   refreshTokens?: RefreshToken[];
 
-  @OneToMany(() => Session, (s) => s.user)
+  @OneToMany(() => Session, (s) => s.user, { onDelete: 'CASCADE' })
   sessions?: Session[];
 
-  @OneToMany(() => Vocabulary, (v) => v.user)
+  @OneToMany(() => Vocabulary, (v) => v.user, { onDelete: 'CASCADE' })
   vocabularies?: Vocabulary[];
 
-  @OneToMany(() => Practice, (p) => p.user)
+  @OneToMany(() => Practice, (p) => p.user, { onDelete: 'CASCADE' })
   practices?: Practice[];
 }

@@ -19,15 +19,23 @@ export class EmailService {
   async sendEmail(to: string, template: Template) {
     const { emailFrom } = this.configService.emailConfig;
     const from = `Wordz <${emailFrom}>`;
+
     try {
-      await this.resend.emails.send({
+      const { data, error } = await this.resend.emails.send({
         from,
         to,
         subject: template.subject,
         html: template.html,
       });
+
+      if (error) {
+        this.logger.error(`Resend Error: ${JSON.stringify(error)}`);
+        return;
+      }
+
+      this.logger.log(`Email sent successfully: ${data?.id}`);
     } catch (error) {
-      this.logger.error(`Failed to send email to ${to}`, error);
+      this.logger.error(`Network/System Error sending email to ${to}`, error);
     }
   }
 
@@ -36,8 +44,8 @@ export class EmailService {
     await this.sendEmail(to, template);
   }
 
-  async sendVerificationEmail(to: string, name: string, verificationLink: string) {
-    const template = new VerifyEmailTemplate(name, verificationLink);
+  async sendVerificationEmail(to: string, name: string, code: string) {
+    const template = new VerifyEmailTemplate(name, code);
     await this.sendEmail(to, template);
   }
 

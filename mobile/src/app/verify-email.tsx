@@ -6,11 +6,11 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { useAuth } from "@/providers/AuthProvider";
 
-export default function VerifyResetCodeScreen() {
+export default function VerifyEmailScreen() {
   const [code, setCode] = useState("");
   const router = useRouter();
   const { email } = useLocalSearchParams<{ email: string }>();
-  const { verifyResetPasswordCode } = useAuth();
+  const { verifyEmail } = useAuth();
 
   const handleVerifyCode = async () => {
     if (!email) {
@@ -35,19 +35,17 @@ export default function VerifyResetCodeScreen() {
     }
 
     // The backend will validate the code
-    const success = await verifyResetPasswordCode({ email, code });
+    const success = await verifyEmail(email, code);
 
     if (success) {
-      // Navigate directly to reset-password with email and code
-      router.push({
-        pathname: "/reset-password",
-        params: { email, code },
-      });
+      //
+    } else {
+      Alert.alert("Error", "Wrong code, you will be redirected to login");
     }
   };
 
-  const handleBackToForgotPassword = () => {
-    router.replace("/forgot-password");
+  const handleBackToLogin = () => {
+    router.replace("/login");
   };
 
   return (
@@ -82,10 +80,8 @@ export default function VerifyResetCodeScreen() {
         <TouchableOpacity style={styles.button} onPress={handleVerifyCode}>
           <ThemedText style={styles.buttonText}>Verify Code</ThemedText>
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleBackToForgotPassword}>
-          <ThemedText style={styles.backLink}>
-            Back to Forgot Password
-          </ThemedText>
+        <TouchableOpacity onPress={handleBackToLogin}>
+          <ThemedText style={styles.backLink}>Back to login</ThemedText>
         </TouchableOpacity>
       </ThemedView>
     </>

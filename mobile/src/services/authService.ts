@@ -5,7 +5,6 @@ import {
   LoginPayload,
   RegisterPayload,
   ResetPasswordWithCodePayload,
-  VerifyResetCodePayload,
 } from "@/types/auth";
 import { User } from "@/types/user";
 import { AxiosInstance } from "axios";
@@ -25,8 +24,8 @@ class AuthService {
     return data;
   }
 
-  async register(payload: RegisterPayload): Promise<ApiResponse<AuthResponse>> {
-    const { data } = await this.http.post<ApiResponse<AuthResponse>>(
+  async register(payload: RegisterPayload): Promise<ApiResponse<boolean>> {
+    const { data } = await this.http.post<ApiResponse<boolean>>(
       "/auth/register",
       payload,
     );
@@ -43,7 +42,18 @@ class AuthService {
     return data;
   }
 
-  async requestPasswordReset(email: string): Promise<ApiResponse<void>> {
+  async verifyEmail(
+    email: string,
+    code: string,
+  ): Promise<ApiResponse<AuthResponse>> {
+    const { data } = await this.http.post<ApiResponse<AuthResponse>>(
+      "/auth/verify-email",
+      { email, code },
+    );
+    return data;
+  }
+
+  async requestResetPassword(email: string): Promise<ApiResponse<void>> {
     const { data } = await this.http.post<ApiResponse<void>>(
       "/auth/request-password-reset",
       { email },
@@ -51,11 +61,12 @@ class AuthService {
     return data;
   }
 
-  async verifyResetCode(
-    payload: VerifyResetCodePayload,
-  ): Promise<ApiResponse<void>> {
-    const { data } = await this.http.post<ApiResponse<void>>(
-      "/auth/verify-reset-code",
+  async verifyResetPasswordCode(payload: {
+    email: string;
+    code: string;
+  }): Promise<ApiResponse<AuthResponse>> {
+    const { data } = await this.http.post<ApiResponse<AuthResponse>>(
+      "/auth/verify-password-reset-code",
       payload,
     );
     return data;
@@ -67,17 +78,6 @@ class AuthService {
     const { data } = await this.http.post<ApiResponse<void>>(
       "/auth/reset-password",
       payload,
-    );
-    return data;
-  }
-
-  async resetPassword(
-    token: string,
-    newPassword: string,
-  ): Promise<ApiResponse<void>> {
-    const { data } = await this.http.post<ApiResponse<void>>(
-      "/auth/reset-password",
-      { token, newPassword },
     );
     return data;
   }

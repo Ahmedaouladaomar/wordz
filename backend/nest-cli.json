@@ -4,6 +4,6 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "deleteOutDir": true,
-    "assets": [{ "include": "modules/email/templates/*.hbs", "outDir": "dist/src" }]
+    "assets": [{ "include": "modules/email/templates/*.hbs", "outDir": "dist" }]
   }
 }

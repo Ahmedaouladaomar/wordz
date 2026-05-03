@@ -6,7 +6,7 @@ export class VerifyEmailTemplate extends BaseEmailTemplate {
 
   constructor(
     private name: string,
-    private verificationLink: string,
+    private verificationCode: string,
   ) {
     super();
   }
@@ -14,7 +14,7 @@ export class VerifyEmailTemplate extends BaseEmailTemplate {
   protected templateContext(): Record<string, unknown> {
     return {
       name: this.name,
-      verificationLink: this.verificationLink,
+      code: this.verificationCode,
     };
   }
 }

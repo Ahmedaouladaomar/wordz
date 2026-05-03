@@ -20,7 +20,7 @@ apiClient.interceptors.response.use(
   (response) => {
     // If your NestJS interceptor wraps everything in { data: ... }
     // You can "unwrap" it here so your components just get the object
-    return response.data;
+    return response;
   },
   (error) => {
     // Centralize error handling (e.g., alert the user)
