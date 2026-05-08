@@ -3,7 +3,6 @@ import {
   Post,
   Body,
   UseGuards,
-  Headers,
   UseInterceptors,
   ClassSerializerInterceptor,
   SerializeOptions,
@@ -20,6 +19,7 @@ import { VerifyEmailDto } from '../user/dto/verify-email.dto';
 import { RequestResetPasswordDto } from '../user/dto/request-reset-password.dto';
 import { ResetPasswordDto } from '../user/dto/reset-password.dto';
 import { UserAgent } from '@/decorators/user-agent.decorator';
+import { ApiResponseDto } from '@/common/dto/api-response.dto';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('auth')
@@ -57,6 +57,12 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
+  @Post('resend-verification')
+  @HttpCode(HttpStatus.OK)
+  async resendVerification(@Body() body: { email: string }) {
+    return this.authService.resendVerificationEmail(body.email);
+  }
+
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
   async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto, @UserAgent() userAgent: string) {
@@ -68,32 +74,27 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async requestResetPassword(@Body() requestResetPasswordDto: RequestResetPasswordDto) {
     await this.authService.requestResetPassword(requestResetPasswordDto.email);
-    return {
-      message: 'If an account with that email exists, a password reset code has been sent.',
-    };
+    const response = new ApiResponseDto(null);
+    response.message = 'If an account with that email exists, a password reset code has been sent.';
+    response.success = true;
+    return response;
   }
 
   @Post('verify-reset-password-code')
   @HttpCode(HttpStatus.OK)
   async verifyResetPasswordCode(@Body() resetPasswordDto: ResetPasswordDto) {
-    const result = await this.authService.verifyResetPasswordCode(
-      resetPasswordDto.email,
-      resetPasswordDto.code,
-    );
-
-    return !!result;
+    await this.authService.verifyResetPasswordCode(resetPasswordDto.email, resetPasswordDto.code);
   }
 
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto, @UserAgent() userAgent: string) {
-    return await this.authService.resetPassword(resetPasswordDto, userAgent);
+    return this.authService.resetPassword(resetPasswordDto, userAgent);
   }
 
   @UseGuards(AuthGuard())
   @Post('logout')
   async logout(@AuthUser() user: AuthUserDto) {
-    console.log(user);
     const { sessionId } = user;
     await this.authService.logout(sessionId);
 

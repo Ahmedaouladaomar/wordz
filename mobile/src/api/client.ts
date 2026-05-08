@@ -18,8 +18,7 @@ apiClient.interceptors.request.use((config) => {
 
 apiClient.interceptors.response.use(
   (response) => {
-    // If your NestJS interceptor wraps everything in { data: ... }
-    // You can "unwrap" it here so your components just get the object
+    // Handling response from api
     return response;
   },
   (error) => {

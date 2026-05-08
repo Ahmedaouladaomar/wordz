@@ -1,10 +1,14 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { StyleSheet, TextInput, TouchableOpacity } from "react-native";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { useAuth } from "@/providers/AuthProvider";
+import { toast } from "react-native-sonner";
+
+const CODE_LENGTH = 6;
+const codeDigits = Array(CODE_LENGTH).fill(0);
 
 export default function VerifyResetCodeScreen() {
   const [code, setCode] = useState("");
@@ -14,23 +18,23 @@ export default function VerifyResetCodeScreen() {
 
   const handleVerifyCode = async () => {
     if (!email) {
-      Alert.alert("Error", "Email is missing. Please try again.");
+      toast.error("Email is missing. Please try again.");
       router.replace("/forgot-password");
       return;
     }
 
     if (!code) {
-      Alert.alert("Error", "Please enter the 6-digit code");
+      toast.error("Please enter the 6-digit code");
       return;
     }
 
     if (code.length !== 6) {
-      Alert.alert("Error", "Code must be exactly 6 digits");
+      toast.error("Code must be exactly 6 digits");
       return;
     }
 
     if (!/^\d+$/.test(code)) {
-      Alert.alert("Error", "Code must contain only numbers");
+      toast.error("Code must contain only numbers");
       return;
     }
 
@@ -43,6 +47,8 @@ export default function VerifyResetCodeScreen() {
         pathname: "/reset-password",
         params: { email, code },
       });
+    } else {
+      toast.error("Invalid or expired reset code");
     }
   };
 
@@ -65,16 +71,37 @@ export default function VerifyResetCodeScreen() {
         <ThemedText style={styles.subtitle}>
           Enter the 6-digit code sent to {email}
         </ThemedText>
-        <TextInput
-          style={styles.input}
-          placeholder="000000"
-          value={code}
-          onChangeText={setCode}
-          keyboardType="numeric"
-          maxLength={6}
-          placeholderTextColor="#999"
-          textAlign="center"
-        />
+        {/* Modern Separated Input Container */}
+        <ThemedView style={styles.otpContainer}>
+          {codeDigits.map((_, index) => {
+            const char = code[index] || "";
+            const isFocused = code.length === index;
+
+            return (
+              <ThemedView
+                key={index}
+                style={[
+                  styles.otpBox,
+                  isFocused && styles.otpBoxFocused,
+                  char !== "" && styles.otpBoxFilled,
+                ]}
+              >
+                <ThemedText style={styles.otpText}>{char}</ThemedText>
+              </ThemedView>
+            );
+          })}
+
+          {/* The "Invisible" Actual Input */}
+          <TextInput
+            style={styles.hiddenInput}
+            value={code}
+            onChangeText={setCode}
+            keyboardType="numeric"
+            maxLength={CODE_LENGTH}
+            autoFocus={true}
+            caretHidden={true}
+          />
+        </ThemedView>
         <ThemedText style={styles.resendText}>
           Didn&apos;t receive the code? Check your spam folder or request a new
           one.
@@ -110,15 +137,45 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     lineHeight: 20,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    padding: 15,
-    marginBottom: 10,
-    borderRadius: 8,
-    fontSize: 18,
+  otpContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 30,
+    position: "relative",
+  },
+  otpBox: {
+    width: 45,
+    height: 55,
+    borderWidth: 1.5,
+    borderColor: "#E5E5E5",
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F9FAFB",
+  },
+  otpBoxFocused: {
+    borderColor: "#007AFF",
+    backgroundColor: "#fff",
+    // Optional: add a small shadow for focus
+    elevation: 2,
+    shadowColor: "#007AFF",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  otpBoxFilled: {
+    borderColor: "#007AFF",
+  },
+  otpText: {
+    fontSize: 24,
     fontWeight: "bold",
-    letterSpacing: 8,
+    color: "#1F2937",
+  },
+  hiddenInput: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0, // Keeps it functional but invisible
+    fontSize: 1, // Fixes cursor issues on some Android versions
   },
   resendText: {
     textAlign: "center",

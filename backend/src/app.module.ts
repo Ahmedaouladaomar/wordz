@@ -13,6 +13,8 @@ import { EmailModule } from './modules/email/email.module';
 // Shared/Config
 import { ApiConfigService } from './shared/services/api-config.service';
 import { SharedModule } from './shared/shared.module';
+import { APP_FILTER } from '@nestjs/core';
+import { AllExceptionsFilter } from './filters/global-exceptions.filter';
 
 @Module({
   imports: [
@@ -40,6 +42,12 @@ import { SharedModule } from './shared/shared.module';
     EmailModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    // Registering exceptions filter globally
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+  ],
 })
 export class AppModule {}

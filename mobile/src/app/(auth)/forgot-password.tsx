@@ -4,12 +4,12 @@ import { Alert, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { useAuth } from "../providers/AuthProvider";
+import { useAuth } from "@/providers/AuthProvider";
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState("");
   const router = useRouter();
-  const { requestPasswordReset, isLoading } = useAuth();
+  const { requestResetPassword, isLoading } = useAuth();
 
   const handleRequestReset = async () => {
     if (!email) {
@@ -17,7 +17,7 @@ export default function ForgotPasswordScreen() {
       return;
     }
 
-    const success = await requestPasswordReset(email);
+    const success = await requestResetPassword(email);
     if (success) {
       Alert.alert(
         "Success",

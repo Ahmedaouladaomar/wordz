@@ -19,13 +19,13 @@ export class RegisterDto {
 
   @IsString()
   @IsNotEmpty()
-  city!: string;
+  city?: string;
 
   @IsString()
   @IsNotEmpty()
-  country!: string;
+  country?: string;
 
   @IsString()
   @IsNotEmpty()
-  address!: string;
+  address?: string;
 }

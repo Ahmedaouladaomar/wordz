@@ -4,7 +4,7 @@ import { Alert, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { useAuth } from "../providers/AuthProvider";
+import { useAuth } from "@/providers/AuthProvider";
 
 export default function ResetPasswordScreen() {
   const [newPassword, setNewPassword] = useState("");
@@ -41,7 +41,6 @@ export default function ResetPasswordScreen() {
     const success = await resetPasswordWithCode({ email, code, newPassword });
     if (success) {
       Alert.alert("Success", "Your password has been reset successfully");
-      router.replace("/login");
     } else {
       Alert.alert(
         "Error",

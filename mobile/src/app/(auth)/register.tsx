@@ -15,8 +15,8 @@ import { z } from "zod";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { useAuth } from "@/providers/AuthProvider";
 import { UserCreatePayload } from "@/types/user";
-import { useAuth } from "../providers/AuthProvider";
 
 const registerSchema = z
   .object({

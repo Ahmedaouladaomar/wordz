@@ -1,4 +1,3 @@
-import apiClient from "@/api/client";
 import { ApiResponse } from "@/types/api";
 import {
   AuthResponse,
@@ -7,81 +6,60 @@ import {
   ResetPasswordWithCodePayload,
 } from "@/types/auth";
 import { User } from "@/types/user";
-import { AxiosInstance } from "axios";
+import { BaseApiService } from "./baseApiService";
 
-class AuthService {
-  private http: AxiosInstance;
-
-  constructor(instance: AxiosInstance) {
-    this.http = instance;
-  }
+class AuthService extends BaseApiService {
+  protected readonly prefix: string = "/auth";
 
   async login(payload: LoginPayload): Promise<ApiResponse<AuthResponse>> {
-    const { data } = await this.http.post<ApiResponse<AuthResponse>>(
-      "/auth/login",
-      payload,
-    );
-    return data;
+    return this.handleRequest<AuthResponse>("/login", "post", payload);
   }
 
-  async register(payload: RegisterPayload): Promise<ApiResponse<boolean>> {
-    const { data } = await this.http.post<ApiResponse<boolean>>(
-      "/auth/register",
-      payload,
-    );
-    return data;
+  async register(payload: RegisterPayload): Promise<ApiResponse<AuthResponse>> {
+    return this.handleRequest<AuthResponse>("/register", "post", payload);
   }
 
   async getMe(): Promise<ApiResponse<User>> {
-    const { data } = await this.http.get<ApiResponse<User>>("/auth/me");
-    return data;
+    return this.handleRequest<User>("/me", "get");
   }
 
   async logout(): Promise<ApiResponse<void>> {
-    const { data } = await this.http.post<ApiResponse<void>>("/auth/logout");
-    return data;
+    return this.handleRequest<void>("/me", "post");
   }
 
   async verifyEmail(
     email: string,
     code: string,
   ): Promise<ApiResponse<AuthResponse>> {
-    const { data } = await this.http.post<ApiResponse<AuthResponse>>(
-      "/auth/verify-email",
-      { email, code },
-    );
-    return data;
+    return this.handleRequest<AuthResponse>("/verify-email", "post", {
+      email,
+      code,
+    });
   }
 
   async requestResetPassword(email: string): Promise<ApiResponse<void>> {
-    const { data } = await this.http.post<ApiResponse<void>>(
-      "/auth/request-password-reset",
-      { email },
-    );
-    return data;
+    return this.handleRequest<void>("/request-reset-password", "post", {
+      email,
+    });
   }
 
   async verifyResetPasswordCode(payload: {
     email: string;
     code: string;
-  }): Promise<ApiResponse<AuthResponse>> {
-    const { data } = await this.http.post<ApiResponse<AuthResponse>>(
-      "/auth/verify-password-reset-code",
+  }): Promise<ApiResponse<void>> {
+    return this.handleRequest<void>(
+      "/verify-reset-password-code",
+      "post",
       payload,
     );
-    return data;
   }
 
   async resetPasswordWithCode(
     payload: ResetPasswordWithCodePayload,
-  ): Promise<ApiResponse<void>> {
-    const { data } = await this.http.post<ApiResponse<void>>(
-      "/auth/reset-password",
-      payload,
-    );
-    return data;
+  ): Promise<ApiResponse<AuthResponse>> {
+    return this.handleRequest<AuthResponse>("/reset-password", "post", payload);
   }
 }
 
 // Export a single instance (Singleton)
-export const authService = new AuthService(apiClient);
+export const authService = new AuthService();

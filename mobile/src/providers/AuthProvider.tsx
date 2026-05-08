@@ -12,7 +12,7 @@ interface AuthContextType {
   register: (userCreatePayload: UserCreatePayload) => Promise<boolean>;
   logout: () => Promise<void>;
   verifyEmail: (email: string, code: string) => Promise<boolean>;
-  requestPasswordReset: (email: string) => Promise<boolean>;
+  requestResetPassword: (email: string) => Promise<boolean>;
   verifyResetPasswordCode: (payload: {
     email: string;
     code: string;
@@ -171,11 +171,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const requestPasswordReset = async (email: string): Promise<boolean> => {
+  const requestResetPassword = async (email: string): Promise<boolean> => {
     try {
       setLoading(true);
-      await authService.requestResetPassword(email);
-      return true;
+      const res = await authService.requestResetPassword(email);
+      return res.success;
     } catch {
       return false;
     } finally {
@@ -189,15 +189,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }): Promise<boolean> => {
     try {
       setLoading(true);
-      const { data } = await authService.verifyResetPasswordCode(payload);
-      if (data?.accessToken && data?.refreshToken && data?.user) {
-        await setAuthData({
-          user: data?.user,
-          accessToken: data?.accessToken,
-          refreshToken: data?.refreshToken,
-        });
-      }
-      return true;
+      const { success } = await authService.verifyResetPasswordCode(payload);
+      return success;
     } catch {
       return false;
     } finally {
@@ -212,8 +205,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }): Promise<boolean> => {
     try {
       setLoading(true);
-      await authService.resetPasswordWithCode(payload);
-      return true;
+      const response = await authService.resetPasswordWithCode(payload);
+      console.log(response);
+      if (
+        response?.data?.accessToken &&
+        response?.data?.refreshToken &&
+        response?.data?.user
+      ) {
+        await setAuthData({
+          user: response?.data?.user,
+          accessToken: response?.data?.accessToken,
+          refreshToken: response?.data?.refreshToken,
+        });
+        return true;
+      }
+      return false;
     } catch {
       return false;
     } finally {
@@ -231,7 +237,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         register,
         logout,
         verifyEmail,
-        requestPasswordReset,
+        requestResetPassword,
         verifyResetPasswordCode,
         resetPasswordWithCode,
       }}

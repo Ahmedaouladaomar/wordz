@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   ConflictException,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ApiConfigService } from '@/shared/services/api-config.service';
@@ -83,6 +84,18 @@ export class AuthService {
     };
   }
 
+  async resendVerificationEmail(email: string) {
+    const user = await this.userService.findByEmail(email);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.isEmailVerified) {
+      throw new BadRequestException('Email already verified');
+    }
+    await this.userService.sendVerificationEmail(user);
+    return { message: 'Verification email sent' };
+  }
+
   async verifyEmail(email: string, code: string, userAgent: string) {
     const user = await this.userService.findByEmail(email);
 
@@ -143,15 +156,13 @@ export class AuthService {
   async resetPassword(resetPassworDto: ResetPasswordDto, userAgent: string) {
     const user = await this.verifyResetPasswordCode(resetPassworDto.email, resetPassworDto.code);
 
-    const { saltRounds } = this.configService.bcryptConfig;
-    const salt = await bcrypt.genSalt(saltRounds);
-    user.password = await bcrypt.hash(resetPassworDto.newPassword, salt);
+    user.password = resetPassworDto.newPassword;
     user.passwordResetCode = undefined;
     user.passwordResetCodeExpires = undefined;
 
     const savedUser = await this.userService.save(user);
 
-    return this.createAuthenticatedSession(savedUser, userAgent);
+    return await this.createAuthenticatedSession(savedUser, userAgent);
   }
 
   /**

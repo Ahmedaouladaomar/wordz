@@ -1,10 +1,11 @@
 import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { toast } from "react-native-sonner";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { useAuth } from "../providers/AuthProvider";
+import { useAuth } from "@/providers/AuthProvider";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -14,16 +15,25 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Please enter email and password");
+      const fieldsArr = [];
+      if (!email) {
+        fieldsArr.push("email");
+      }
+      if (!password) {
+        fieldsArr.push("password");
+      }
+      const fieldsText = fieldsArr.join(" and ");
+      toast.error(`Please enter ${fieldsText}`);
       return;
     }
 
     const isLoggedIn = await login(email, password);
+
     if (isLoggedIn) {
-      Alert.alert("Login Successful", `Welcome back!`);
+      toast.success("Login Successful!");
       router.replace("/home" as any);
     } else {
-      Alert.alert("Login Failed", "Invalid credentials");
+      toast.error("Login failed. Invalid credentials");
     }
   };
 
