@@ -23,8 +23,18 @@ class AuthService extends BaseApiService {
     return this.handleRequest<User>("/me", "get");
   }
 
+  /**
+   * Refresh the access token using a valid refresh token.
+   */
+  async refreshToken(token: string): Promise<ApiResponse<AuthResponse>> {
+    // We send the token in the body as per industry standard for mobile
+    return this.handleRequest<AuthResponse>("/refresh", "post", {
+      refreshToken: token,
+    });
+  }
+
   async logout(): Promise<ApiResponse<void>> {
-    return this.handleRequest<void>("/me", "post");
+    return this.handleRequest<void>("/logout", "post");
   }
 
   async verifyEmail(

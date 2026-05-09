@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { TokenType } from '@/constants/token-type';
 import { ApiConfigService } from '@/shared/services/api-config.service';
+import { RefreshDto } from '../dto/refresh.dto';
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(Strategy, TokenType.REFRESH_TOKEN) {
@@ -16,6 +17,9 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, TokenType.R
   }
 
   validate(req: Request, payload: { sub: string; sessionId: string }) {
+    console.log('hello from refresh token strategy!');
+    console.log(payload);
+
     const refreshHeader = req.headers.authorization as string;
     const refreshToken = refreshHeader?.split(' ')[1];
 
@@ -23,6 +27,6 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, TokenType.R
       userId: payload.sub,
       sessionId: payload.sessionId,
       refreshToken,
-    };
+    } as RefreshDto;
   }
 }

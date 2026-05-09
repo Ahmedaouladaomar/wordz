@@ -8,6 +8,8 @@ import {
   SerializeOptions,
   HttpCode,
   HttpStatus,
+  Get,
+  NotFoundException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@/guards/auth.guard';
@@ -20,11 +22,16 @@ import { RequestResetPasswordDto } from '../user/dto/request-reset-password.dto'
 import { ResetPasswordDto } from '../user/dto/reset-password.dto';
 import { UserAgent } from '@/decorators/user-agent.decorator';
 import { ApiResponseDto } from '@/common/dto/api-response.dto';
+import { RefreshDto } from './dto/refresh.dto';
+import { UserService } from '../user/user.service';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
 
   @SerializeOptions({ groups: ['users'] })
   @Post('login')
@@ -38,9 +45,30 @@ export class AuthController {
     return { user, accessToken, refreshToken };
   }
 
+  @Get('me')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard())
+  async getMe(@AuthUser() user: AuthUserDto): Promise<ApiResponseDto<AuthUserDto>> {
+    console.log(user);
+    const freshUser = await this.userService.findOne(user.userId);
+
+    if (!freshUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    const authUser = new AuthUserDto({
+      ...freshUser,
+      userId: freshUser.id,
+      sessionId: user.sessionId,
+      refreshToken: user.refreshToken,
+    } as any);
+
+    return new ApiResponseDto(authUser);
+  }
+
   @UseGuards(AuthGuard({ refreshToken: true }))
   @Post('refresh')
-  async refresh(@AuthUser() user: AuthUserDto) {
+  async refresh(@AuthUser() user: RefreshDto) {
     const { userId, sessionId, refreshToken: ort } = user;
 
     const { accessToken, refreshToken } = await this.authService.refreshToken(

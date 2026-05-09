@@ -15,10 +15,14 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, STRATEGIES.A
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: configService.authConfig.privateKey,
+      ignoreExpiration: false,
     });
   }
 
-  async validate(payload: { sub: string; email: string; sessionId: string }) {
+  async validate(payload: { sub: string; email: string; sessionId: string; exp: any }) {
+    if (payload.exp < Date.now() / 1000) {
+      console.log('TOKEN IS EXPIRED IN VALIDATE');
+    }
     // Payload Validation
     if (!payload.sub || !payload.sessionId) {
       throw new UnauthorizedException('Invalid token payload');

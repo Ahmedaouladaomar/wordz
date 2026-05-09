@@ -28,8 +28,6 @@ export abstract class BaseApiService {
         response = await this.http[method](fullPath, payload, options);
       }
 
-      console.log("response.data =>", response.data);
-
       return response.data;
     } catch (error: any) {
       const message =

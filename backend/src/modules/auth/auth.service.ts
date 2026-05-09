@@ -217,16 +217,14 @@ export class AuthService {
 
     const { privateKey, refreshKey, expiresIn, refreshExpiresIn } = this.configService.authConfig;
 
-    // Note: We don't put the refreshToken in the payload;
-    // it's a random string or a long-lived JWT.
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
         secret: privateKey,
-        expiresIn: expiresIn * 1000, // Convert seconds to milliseconds
+        expiresIn: expiresIn,
       }),
       this.jwtService.signAsync(payload, {
         secret: refreshKey,
-        expiresIn: refreshExpiresIn * 1000,
+        expiresIn: refreshExpiresIn,
       }),
     ]);
 

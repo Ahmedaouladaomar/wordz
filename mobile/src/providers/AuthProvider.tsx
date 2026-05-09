@@ -206,7 +206,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true);
       const response = await authService.resetPasswordWithCode(payload);
-      console.log(response);
       if (
         response?.data?.accessToken &&
         response?.data?.refreshToken &&
