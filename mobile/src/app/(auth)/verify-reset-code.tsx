@@ -1,11 +1,13 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { toast } from "react-native-sonner";
+import { Text, View, YStack } from "tamagui";
 
 import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
+import { Card } from "@/components/ui/card";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { useAuth } from "@/providers/AuthProvider";
-import { toast } from "react-native-sonner";
 
 const CODE_LENGTH = 6;
 const codeDigits = Array(CODE_LENGTH).fill(0);
@@ -64,57 +66,73 @@ export default function VerifyResetCodeScreen() {
           headerShown: false,
         }}
       />
-      <ThemedView style={styles.container}>
-        <ThemedText type="title" style={styles.title}>
-          Verify Code
-        </ThemedText>
-        <ThemedText style={styles.subtitle}>
-          Enter the 6-digit code sent to {email}
-        </ThemedText>
-        {/* Modern Separated Input Container */}
-        <ThemedView style={styles.otpContainer}>
-          {codeDigits.map((_, index) => {
-            const char = code[index] || "";
-            const isFocused = code.length === index;
-
-            return (
-              <ThemedView
-                key={index}
-                style={[
-                  styles.otpBox,
-                  isFocused && styles.otpBoxFocused,
-                  char !== "" && styles.otpBoxFilled,
-                ]}
-              >
-                <ThemedText style={styles.otpText}>{char}</ThemedText>
-              </ThemedView>
-            );
-          })}
-
-          {/* The "Invisible" Actual Input */}
-          <TextInput
-            style={styles.hiddenInput}
-            value={code}
-            onChangeText={setCode}
-            keyboardType="numeric"
-            maxLength={CODE_LENGTH}
-            autoFocus={true}
-            caretHidden={true}
-          />
-        </ThemedView>
-        <ThemedText style={styles.resendText}>
-          Didn&apos;t receive the code? Check your spam folder or request a new
-          one.
-        </ThemedText>
-        <TouchableOpacity style={styles.button} onPress={handleVerifyCode}>
-          <ThemedText style={styles.buttonText}>Verify Code</ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleBackToForgotPassword}>
-          <ThemedText style={styles.backLink}>
-            Back to Forgot Password
+      <View style={styles.container} bg="$brandPrimaryLight">
+        <Card px={25} py={40}>
+          <ThemedText type="title" style={styles.title}>
+            Verify Code
           </ThemedText>
-        </TouchableOpacity>
-      </ThemedView>
+          <ThemedText style={styles.subtitle}>
+            Enter the 6-digit code sent to {email}
+          </ThemedText>
+          {/* Modern Separated Input Container */}
+          <YStack ai="center" jc="center" mb={30} gap={8}>
+            <View style={styles.otpContainer}>
+              {codeDigits.map((_, index) => {
+                const char = code[index] || "";
+                const isFocused = code.length === index;
+
+                return (
+                  <View
+                    key={index}
+                    style={[
+                      styles.otpBox,
+                      isFocused && styles.otpBoxFocused,
+                      char !== "" && styles.otpBoxFilled,
+                    ]}
+                  >
+                    <ThemedText style={styles.otpText}>{char}</ThemedText>
+                  </View>
+                );
+              })}
+
+              {/* The "Invisible" Actual Input */}
+              <TextInput
+                style={styles.hiddenInput}
+                value={code}
+                onChangeText={setCode}
+                keyboardType="numeric"
+                maxLength={CODE_LENGTH}
+                autoFocus={true}
+                caretHidden={true}
+              />
+            </View>
+          </YStack>
+
+          <ThemedText style={styles.resendText}>
+            Didn&apos;t receive the code? Check your spam folder or request a
+            new one.
+          </ThemedText>
+          <GradientButton
+            bg="$brandPrimary"
+            color="white"
+            br="$12"
+            height={60}
+            mb={20}
+            borderWidth={0}
+            onPress={handleVerifyCode}
+            disabled={false}
+          >
+            <Text col="white" fos="$lg">
+              Verify Code
+            </Text>
+          </GradientButton>
+          <TouchableOpacity onPress={handleBackToForgotPassword}>
+            <ThemedText style={styles.backLink}>
+              Back to Forgot Password
+            </ThemedText>
+          </TouchableOpacity>
+        </Card>
+      </View>
     </>
   );
 }
@@ -127,7 +145,7 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: "center",
-    marginBottom: 15,
+    marginBottom: 20,
     fontSize: 32,
   },
   subtitle: {
@@ -141,67 +159,49 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 30,
     position: "relative",
+    width: "100%",
   },
   otpBox: {
     width: 45,
     height: 55,
     borderWidth: 1.5,
-    borderColor: "#E5E5E5",
-    borderRadius: 12,
+    borderColor: "#006572",
+    borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#fff",
   },
   otpBoxFocused: {
-    borderColor: "#007AFF",
-    backgroundColor: "#fff",
-    // Optional: add a small shadow for focus
-    elevation: 2,
-    shadowColor: "#007AFF",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderColor: "#008a9c",
+    borderWidth: 2,
   },
   otpBoxFilled: {
-    borderColor: "#007AFF",
+    backgroundColor: "#f0f8fa",
   },
   otpText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#1F2937",
+    color: "#000",
   },
   hiddenInput: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0, // Keeps it functional but invisible
-    fontSize: 1, // Fixes cursor issues on some Android versions
+    position: "absolute",
+    opacity: 0,
+    width: "100%",
+    height: "100%",
   },
   resendText: {
     textAlign: "center",
-    marginBottom: 20,
     fontSize: 12,
-    opacity: 0.6,
+    opacity: 0.7,
+    marginBottom: 20,
     lineHeight: 18,
-  },
-  button: {
-    backgroundColor: "#007AFF",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  buttonDisabled: {
-    backgroundColor: "#cccccc",
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
   },
   backLink: {
     textAlign: "center",
-    color: "#007AFF",
+    color: "#008a9c",
     fontSize: 14,
+    fontWeight: "600",
+    textDecorationLine: "underline",
   },
 });

@@ -1,4 +1,4 @@
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 import React from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 
@@ -8,11 +8,9 @@ import { useAuth } from "@/providers/AuthProvider";
 
 export default function HomeScreen() {
   const { user, logout } = useAuth();
-  const router = useRouter();
 
   const handleLogout = async () => {
     await logout();
-    router.replace("/login");
   };
 
   return (

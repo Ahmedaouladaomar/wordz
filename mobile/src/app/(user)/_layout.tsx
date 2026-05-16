@@ -1,15 +1,19 @@
 import { useAuth } from "@/providers/AuthProvider";
-import { Redirect, Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
+import { useEffect } from "react";
 
 export default function AppLayout() {
   const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
 
-  if (isLoading) return null;
+  useEffect(() => {
+    // If we're still loading the auth state, don't do anything yet
+    if (isLoading) return;
 
-  // If not authenticated, send to lgin
-  if (!isAuthenticated) {
-    return <Redirect href="/login" />;
-  }
+    if (!isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [isLoading, isAuthenticated]);
 
   return <Stack screenOptions={{ headerShown: false }} />;
 }

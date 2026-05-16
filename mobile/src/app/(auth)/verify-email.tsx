@@ -1,9 +1,13 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { StyleSheet, TouchableOpacity } from "react-native";
+import { toast } from "react-native-sonner";
+import { Text, View } from "tamagui";
 
 import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
+import { Card } from "@/components/ui/card";
+import { GradientButton } from "@/components/ui/gradient-button";
+import { TextInput } from "@/components/ui/text-input";
 import { useAuth } from "@/providers/AuthProvider";
 
 export default function VerifyEmailScreen() {
@@ -14,23 +18,23 @@ export default function VerifyEmailScreen() {
 
   const handleVerifyCode = async () => {
     if (!email) {
-      Alert.alert("Error", "Email is missing. Please try again.");
-      router.replace("/forgot-password");
+      toast.error("Email is missing. Please try again.");
+      router.replace("/register");
       return;
     }
 
     if (!code) {
-      Alert.alert("Error", "Please enter the 6-digit code");
+      toast.error("Please enter the 6-digit code");
       return;
     }
 
     if (code.length !== 6) {
-      Alert.alert("Error", "Code must be exactly 6 digits");
+      toast.error("Code must be exactly 6 digits");
       return;
     }
 
     if (!/^\d+$/.test(code)) {
-      Alert.alert("Error", "Code must contain only numbers");
+      toast.error("Code must contain only numbers");
       return;
     }
 
@@ -38,9 +42,10 @@ export default function VerifyEmailScreen() {
     const success = await verifyEmail(email, code);
 
     if (success) {
-      //
+      toast.success("Email verified! You can now login.");
+      router.replace("/login");
     } else {
-      Alert.alert("Error", "Wrong code, you will be redirected to login");
+      toast.error("Wrong code, please try again");
     }
   };
 
@@ -56,34 +61,46 @@ export default function VerifyEmailScreen() {
           headerShown: false,
         }}
       />
-      <ThemedView style={styles.container}>
-        <ThemedText type="title" style={styles.title}>
-          Verify Code
-        </ThemedText>
-        <ThemedText style={styles.subtitle}>
-          Enter the 6-digit code sent to {email}
-        </ThemedText>
-        <TextInput
-          style={styles.input}
-          placeholder="000000"
-          value={code}
-          onChangeText={setCode}
-          keyboardType="numeric"
-          maxLength={6}
-          placeholderTextColor="#999"
-          textAlign="center"
-        />
-        <ThemedText style={styles.resendText}>
-          Didn&apos;t receive the code? Check your spam folder or request a new
-          one.
-        </ThemedText>
-        <TouchableOpacity style={styles.button} onPress={handleVerifyCode}>
-          <ThemedText style={styles.buttonText}>Verify Code</ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleBackToLogin}>
-          <ThemedText style={styles.backLink}>Back to login</ThemedText>
-        </TouchableOpacity>
-      </ThemedView>
+      <View style={styles.container} bg="$brandPrimaryLight">
+        <Card px={25} py={40}>
+          <ThemedText type="title" style={styles.title}>
+            Verify Code
+          </ThemedText>
+          <ThemedText style={styles.subtitle}>
+            Enter the 6-digit code sent to {email}
+          </ThemedText>
+          <TextInput
+            label="Verification Code"
+            placeholder="000000"
+            value={code}
+            mb={15}
+            onChangeText={setCode}
+            keyboardType="numeric"
+            maxLength={6}
+          />
+          <ThemedText style={styles.resendText}>
+            Didn&apos;t receive the code? Check your spam folder or request a
+            new one.
+          </ThemedText>
+          <GradientButton
+            bg="$brandPrimary"
+            color="white"
+            br="$12"
+            height={60}
+            mb={20}
+            borderWidth={0}
+            onPress={handleVerifyCode}
+            mt={15}
+          >
+            <Text col="white" fos="$lg">
+              Verify Code
+            </Text>
+          </GradientButton>
+          <TouchableOpacity onPress={handleBackToLogin}>
+            <ThemedText style={styles.backLink}>Back to login</ThemedText>
+          </TouchableOpacity>
+        </Card>
+      </View>
     </>
   );
 }
@@ -96,7 +113,7 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: "center",
-    marginBottom: 15,
+    marginBottom: 20,
     fontSize: 32,
   },
   subtitle: {
@@ -106,41 +123,18 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     lineHeight: 20,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    padding: 15,
-    marginBottom: 10,
-    borderRadius: 8,
-    fontSize: 18,
-    fontWeight: "bold",
-    letterSpacing: 8,
-  },
   resendText: {
     textAlign: "center",
-    marginBottom: 20,
     fontSize: 12,
-    opacity: 0.6,
+    opacity: 0.7,
+    marginBottom: 20,
     lineHeight: 18,
-  },
-  button: {
-    backgroundColor: "#007AFF",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  buttonDisabled: {
-    backgroundColor: "#cccccc",
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
   },
   backLink: {
     textAlign: "center",
-    color: "#007AFF",
+    color: "#008a9c",
     fontSize: 14,
+    fontWeight: "600",
+    textDecorationLine: "underline",
   },
 });

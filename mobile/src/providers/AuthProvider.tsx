@@ -1,7 +1,8 @@
+import { ScreenLoader } from "@/components/screen-loader";
 import { authService } from "@/services/authService";
 import { useAuthStore } from "@/store/auth-store";
 import type { User, UserCreatePayload } from "@/types/user";
-import React, { createContext, useContext, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { StorageHelper, StorageKeys } from "../helpers/storage.helper";
 
 interface AuthContextType {
@@ -31,20 +32,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isLoading = useAuthStore((state) => state.isLoading);
+  // Setters
   const setUser = useAuthStore((state) => state.setUser);
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
   const setRefreshToken = useAuthStore((state) => state.setRefreshToken);
   const setLoading = useAuthStore((state) => state.setLoading);
+  // Initial auth loading
+  const [isInitLoading, setIsInitLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
 
-    const bootstrapAuth = async () => {
-      setLoading(true);
+    const checkAuth = async () => {
       try {
         const token = await StorageHelper.get<string>(StorageKeys.ACCESS_TOKEN);
         if (token) {
           try {
+            // Retrieving authenticated user
             const response = await authService.getMe();
             if (!mounted) return;
             setUser(response.data as User);
@@ -60,14 +64,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
       } finally {
         if (mounted) {
-          setLoading(false);
+          setIsInitLoading(false);
         }
       }
     };
 
-    void bootstrapAuth();
+    // Delay for animation purposes
+    const timeout = setTimeout(checkAuth, 500);
+
     return () => {
       mounted = false;
+      clearTimeout(timeout);
     };
   }, []);
 
@@ -138,12 +145,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    setLoading(true);
     try {
       await authService.logout();
-    } finally {
-      await StorageHelper.removeItem(StorageKeys.ACCESS_TOKEN);
-      await StorageHelper.removeItem(StorageKeys.REFRESH_TOKEN);
+      await Promise.all(
+        [StorageKeys.ACCESS_TOKEN, StorageKeys.REFRESH_TOKEN].map((key) =>
+          StorageHelper.removeItem(key),
+        ),
+      );
       setUser(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -241,7 +253,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         resetPasswordWithCode,
       }}
     >
-      {children}
+      {isInitLoading ? <ScreenLoader /> : children}
     </AuthContext.Provider>
   );
 }

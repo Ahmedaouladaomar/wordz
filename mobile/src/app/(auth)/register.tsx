@@ -1,20 +1,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useRouter } from "expo-router";
 import React from "react";
-import { Controller, useForm } from "react-hook-form"; // Added Controller
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-} from "react-native";
+import { Controller, useForm } from "react-hook-form";
+import { Alert, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import { Text, View } from "tamagui";
 import { z } from "zod";
 
 import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
+import { Card } from "@/components/ui/card";
+import { CircleSpinner } from "@/components/ui/circle-spinner";
+import { GradientButton } from "@/components/ui/gradient-button";
+import { TextInput } from "@/components/ui/text-input";
 import { useAuth } from "@/providers/AuthProvider";
 import { UserCreatePayload } from "@/types/user";
 
@@ -74,206 +70,205 @@ export default function RegisterScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
-    >
+    <>
       <Stack.Screen options={{ title: "Register", headerShown: false }} />
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <ThemedView style={styles.container}>
-          <ThemedText type="title" style={styles.title}>
-            Register
-          </ThemedText>
-
-          {/* First Name */}
-          <Controller
-            control={control}
-            name="firstName"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                style={[styles.input, errors.firstName && styles.inputError]}
-                placeholder="First name"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                autoCapitalize="words"
-                editable={!isLoading}
-                placeholderTextColor="#999"
-              />
-            )}
-          />
-          {errors.firstName && (
-            <ThemedText style={styles.errorText}>
-              {errors.firstName.message}
+      <View style={{ flex: 1 }} bg="$brandPrimaryLight">
+        <ScrollView
+          style={styles.scrollContainer}
+          contentContainerStyle={styles.contentContainer}
+        >
+          <View style={styles.spacer} />
+          <Card px={25} py={40}>
+            <ThemedText type="title" style={styles.title}>
+              Register
             </ThemedText>
-          )}
 
-          {/* Last Name */}
-          <Controller
-            control={control}
-            name="lastName"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                style={[styles.input, errors.lastName && styles.inputError]}
-                placeholder="Last name"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                autoCapitalize="words"
-                editable={!isLoading}
-                placeholderTextColor="#999"
-              />
-            )}
-          />
-          {errors.lastName && (
-            <ThemedText style={styles.errorText}>
-              {errors.lastName.message}
-            </ThemedText>
-          )}
+            {/* First Name */}
+            <Controller
+              control={control}
+              name="firstName"
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <TextInput
+                    label="First Name"
+                    placeholder="John"
+                    value={value}
+                    onChangeText={onChange}
+                    autoCapitalize="words"
+                    editable={!isLoading}
+                    mb={errors.firstName ? 5 : 15}
+                  />
+                  {errors.firstName && (
+                    <ThemedText style={styles.errorText}>
+                      {errors.firstName.message}
+                    </ThemedText>
+                  )}
+                </>
+              )}
+            />
 
-          {/* Email */}
-          <Controller
-            control={control}
-            name="email"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                style={[styles.input, errors.email && styles.inputError]}
-                placeholder="Email"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                editable={!isLoading}
-                placeholderTextColor="#999"
-              />
-            )}
-          />
-          {errors.email && (
-            <ThemedText style={styles.errorText}>
-              {errors.email.message}
-            </ThemedText>
-          )}
+            {/* Last Name */}
+            <Controller
+              control={control}
+              name="lastName"
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <TextInput
+                    label="Last Name"
+                    placeholder="Doe"
+                    value={value}
+                    onChangeText={onChange}
+                    autoCapitalize="words"
+                    editable={!isLoading}
+                    mb={errors.lastName ? 5 : 15}
+                  />
+                  {errors.lastName && (
+                    <ThemedText style={styles.errorText}>
+                      {errors.lastName.message}
+                    </ThemedText>
+                  )}
+                </>
+              )}
+            />
 
-          {/* Password */}
-          <Controller
-            control={control}
-            name="password"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                style={[styles.input, errors.password && styles.inputError]}
-                placeholder="Password"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                secureTextEntry
-                editable={!isLoading}
-                placeholderTextColor="#999"
-              />
-            )}
-          />
-          {errors.password && (
-            <ThemedText style={styles.errorText}>
-              {errors.password.message}
-            </ThemedText>
-          )}
+            {/* Email */}
+            <Controller
+              control={control}
+              name="email"
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <TextInput
+                    label="Email"
+                    placeholder="john@example.com"
+                    value={value}
+                    onChangeText={onChange}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    editable={!isLoading}
+                    mb={errors.email ? 5 : 15}
+                  />
+                  {errors.email && (
+                    <ThemedText style={styles.errorText}>
+                      {errors.email.message}
+                    </ThemedText>
+                  )}
+                </>
+              )}
+            />
 
-          {/* Confirm Password */}
-          <Controller
-            control={control}
-            name="confirmPassword"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                style={[
-                  styles.input,
-                  errors.confirmPassword && styles.inputError,
-                ]}
-                placeholder="Confirm Password"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                secureTextEntry
-                editable={!isLoading}
-                placeholderTextColor="#999"
-              />
-            )}
-          />
-          {errors.confirmPassword && (
-            <ThemedText style={styles.errorText}>
-              {errors.confirmPassword.message}
-            </ThemedText>
-          )}
+            {/* Password */}
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <TextInput
+                    label="Password"
+                    placeholder="Password"
+                    value={value}
+                    onChangeText={onChange}
+                    secureTextEntry
+                    editable={!isLoading}
+                    mb={errors.password ? 5 : 15}
+                  />
+                  {errors.password && (
+                    <ThemedText style={styles.errorText}>
+                      {errors.password.message}
+                    </ThemedText>
+                  )}
+                </>
+              )}
+            />
 
-          <TouchableOpacity
-            style={[styles.button, isLoading && styles.buttonDisabled]}
-            onPress={handleSubmit(onSubmit)}
-            disabled={isLoading}
-          >
-            <ThemedText style={styles.buttonText}>
-              {isLoading ? "Creating account..." : "Register"}
-            </ThemedText>
-          </TouchableOpacity>
+            {/* Confirm Password */}
+            <Controller
+              control={control}
+              name="confirmPassword"
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <TextInput
+                    label="Confirm Password"
+                    placeholder="Confirm Password"
+                    value={value}
+                    onChangeText={onChange}
+                    secureTextEntry
+                    editable={!isLoading}
+                    mb={errors.confirmPassword ? 5 : 20}
+                  />
+                  {errors.confirmPassword && (
+                    <ThemedText style={styles.errorText}>
+                      {errors.confirmPassword.message}
+                    </ThemedText>
+                  )}
+                </>
+              )}
+            />
 
-          <TouchableOpacity onPress={() => router.back()} disabled={isLoading}>
-            <ThemedText style={styles.loginLink}>
-              Already have an account? Login
-            </ThemedText>
-          </TouchableOpacity>
-        </ThemedView>
-      </ScrollView>
-    </KeyboardAvoidingView>
+            <GradientButton
+              bg="$brandPrimary"
+              color="white"
+              br="$12"
+              height={60}
+              mb={20}
+              borderWidth={0}
+              onPress={handleSubmit(onSubmit)}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <CircleSpinner color="white" />
+              ) : (
+                <Text col="white" fos="$lg">
+                  Register
+                </Text>
+              )}
+            </GradientButton>
+
+            <TouchableOpacity
+              onPress={() => router.push("/login")}
+              disabled={isLoading}
+            >
+              <ThemedText style={styles.loginLink}>
+                Already have an account? Login
+              </ThemedText>
+            </TouchableOpacity>
+          </Card>
+          <View style={styles.spacer} />
+        </ScrollView>
+      </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scrollContainer: {
     flex: 1,
+  },
+  contentContainer: {
+    flexGrow: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
     justifyContent: "center",
-    padding: 20,
+  },
+  spacer: {
+    minHeight: 40,
   },
   title: {
     textAlign: "center",
-    marginBottom: 30,
+    marginBottom: 40,
     fontSize: 32,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    padding: 15,
-    marginBottom: 5, // Reduced to accommodate error text better
-    borderRadius: 8,
-    fontSize: 16,
-    color: "#000",
-    backgroundColor: "#fff", // Added for visibility
-  },
-  button: {
-    backgroundColor: "#007AFF",
-    paddingVertical: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+  errorText: {
+    color: "#d32f2f",
+    fontSize: 12,
+    marginBottom: 10,
+    marginLeft: 8,
+    fontWeight: "500",
   },
   loginLink: {
     textAlign: "center",
-    color: "#007AFF",
+    color: "#008a9c",
     fontSize: 14,
-  },
-  inputError: {
-    borderColor: "#ff0000",
-  },
-  errorText: {
-    color: "#ff0000",
-    fontSize: 12,
-    marginBottom: 10,
-    paddingHorizontal: 5,
+    fontWeight: "600",
+    textDecorationLine: "underline",
   },
 });

@@ -1,10 +1,14 @@
 import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { StyleSheet, TouchableOpacity } from "react-native";
 import { toast } from "react-native-sonner";
+import { Text, View, XStack } from "tamagui";
 
 import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
+import { Card } from "@/components/ui/card";
+import { CircleSpinner } from "@/components/ui/circle-spinner";
+import { GradientButton } from "@/components/ui/gradient-button";
+import { TextInput } from "@/components/ui/text-input";
 import { useAuth } from "@/providers/AuthProvider";
 
 export default function LoginScreen() {
@@ -48,50 +52,63 @@ export default function LoginScreen() {
   return (
     <>
       <Stack.Screen options={{ title: "Login", headerShown: false }} />
-      <ThemedView style={styles.container}>
-        <ThemedText type="title" style={styles.title}>
-          Login
-        </ThemedText>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          editable={!isLoading}
-          placeholderTextColor="#999"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          editable={!isLoading}
-          placeholderTextColor="#999"
-        />
-        <TouchableOpacity
-          style={[styles.button, isLoading && styles.buttonDisabled]}
-          onPress={handleLogin}
-          disabled={isLoading}
-        >
-          <ThemedText style={styles.buttonText}>
-            {isLoading ? "Logging in..." : "Login"}
+      <View style={styles.container} bg="$brandPrimaryLight">
+        <Card px={25} py={40}>
+          <ThemedText type="title" style={styles.title}>
+            Login
           </ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleForgotPassword} disabled={isLoading}>
-          <ThemedText style={styles.forgotLink}>Forgot Password?</ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleRegisterNavigation}
-          disabled={isLoading}
-        >
-          <ThemedText style={styles.registerLink}>
-            Don&apos;t have an account? Register
-          </ThemedText>
-        </TouchableOpacity>
-      </ThemedView>
+          <TextInput
+            label="Email"
+            placeholder="test@example.com"
+            value={email}
+            mb={15}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            editable={!isLoading}
+          />
+          <TextInput
+            label="Password"
+            placeholder="Password"
+            value={password}
+            marginBottom={20}
+            onChangeText={setPassword}
+            secureTextEntry
+            editable={!isLoading}
+          />
+          <GradientButton
+            bg="$brandPrimary"
+            color="white"
+            br="$12"
+            height={60}
+            mb={20}
+            borderWidth={0}
+            onPress={handleLogin}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <CircleSpinner color="white" />
+            ) : (
+              <Text color="white" fos="$lg">
+                Login
+              </Text>
+            )}
+          </GradientButton>
+          <TouchableOpacity onPress={handleForgotPassword} disabled={isLoading}>
+            <ThemedText style={styles.forgotLink}>Forgot Password?</ThemedText>
+          </TouchableOpacity>
+
+          <XStack jc="center" ai="center" gap={5}>
+            <Text style={styles.registerText}>Don&apos;t have an account?</Text>
+            <TouchableOpacity
+              onPress={handleRegisterNavigation}
+              disabled={isLoading}
+            >
+              <ThemedText style={styles.registerLink}>Register</ThemedText>
+            </TouchableOpacity>
+          </XStack>
+        </Card>
+      </View>
     </>
   );
 }
@@ -107,27 +124,13 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     fontSize: 32,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    padding: 15,
-    marginBottom: 15,
-    borderRadius: 8,
-    fontSize: 16,
-    color: "#000",
-  },
-  button: {
-    backgroundColor: "#007AFF",
-    paddingVertical: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 20,
-  },
   forgotLink: {
     textAlign: "center",
-    color: "#007AFF",
+    color: "#008a9c",
     fontSize: 14,
-    marginBottom: 15,
+    marginBottom: 5,
+    textDecorationLine: "underline",
+    fontWeight: "600",
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -137,9 +140,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-  registerLink: {
-    textAlign: "center",
-    color: "#007AFF",
+  registerText: {
+    color: "#008a9c",
     fontSize: 14,
+    fontWeight: "600",
+  },
+  registerLink: {
+    color: "#008a9c",
+    fontSize: 14,
+    fontWeight: "600",
+    textDecorationLine: "underline",
   },
 });

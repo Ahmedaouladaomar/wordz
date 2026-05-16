@@ -1,51 +1,63 @@
-import React from "react";
-import { ActivityIndicator, Modal, StyleSheet, Text, View } from "react-native";
+import React, { useEffect } from "react";
+import Animated, {
+  Easing as easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from "react-native-reanimated";
+import { Svg, Circle as SvgCircle } from "react-native-svg";
+import { YStack } from "tamagui";
 
-interface Props {
-  isVisible: boolean;
-  message?: string;
-}
+const AnimatedSvg = Animated.createAnimatedComponent(Svg);
 
-export const ScreenLoader = ({ isVisible, message = "Loading..." }: Props) => {
+export const ScreenLoader = () => {
+  const rotation = useSharedValue(0);
+
+  useEffect(() => {
+    rotation.value = withRepeat(
+      withTiming(360, {
+        duration: 800,
+        easing: easing.linear,
+      }),
+      -1,
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
+
   return (
-    <Modal
-      transparent
-      animationType="fade"
-      visible={isVisible}
-      onRequestClose={() => {}}
-    >
-      <View style={styles.container}>
-        <View style={styles.card}>
-          <ActivityIndicator size="large" color="#4F46E5" />
-          {message && <Text style={styles.text}>{message}</Text>}
-        </View>
-      </View>
-    </Modal>
+    <YStack f={1} ai="center" jc="center" gap="$medium" bg="$background">
+      <AnimatedSvg
+        width="60"
+        height="60"
+        viewBox="0 0 50 50"
+        style={animatedStyle}
+      >
+        {/* Background Track */}
+        <SvgCircle
+          cx="25"
+          cy="25"
+          r="20"
+          stroke="#e6e6e6"
+          strokeWidth="4"
+          fill="none"
+          strokeOpacity={0.2}
+        />
+        {/* Animated Primary Teal Dash */}
+        <SvgCircle
+          cx="25"
+          cy="25"
+          r="20"
+          stroke="#006572" // Your brandPrimary hex
+          strokeWidth="4"
+          fill="none"
+          strokeDasharray="90, 150"
+          strokeLinecap="round"
+        />
+      </AnimatedSvg>
+    </YStack>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.4)", // Dimmed background
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  card: {
-    backgroundColor: "white",
-    padding: 24,
-    borderRadius: 16,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  text: {
-    marginTop: 12,
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#374151",
-  },
-});
