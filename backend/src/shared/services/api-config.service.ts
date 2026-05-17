@@ -82,6 +82,12 @@ export class ApiConfigService {
     };
   }
 
+  get googleAuthConfig() {
+    return {
+      clientId: this.getString('GOOGLE_CLIENT_ID'),
+    };
+  }
+
   get authConfig() {
     return {
       privateKey: this.getString('JWT_PRIVATE_KEY'),

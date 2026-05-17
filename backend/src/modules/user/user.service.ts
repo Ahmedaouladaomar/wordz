@@ -54,6 +54,13 @@ export class UserService {
   }
 
   /**
+   * Find one user by Google ID
+   */
+  async findByGoogleId(googleId: string): Promise<User | null> {
+    return await this.userRepository.findOne({ where: { googleId } });
+  }
+
+  /**
    * Find one user by ID
    */
   async findOne(id: string): Promise<User> {

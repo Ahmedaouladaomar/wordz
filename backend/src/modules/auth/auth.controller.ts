@@ -14,6 +14,7 @@ import {
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@/guards/auth.guard';
 import { LoginDto } from './dto/login.dto';
+import { GoogleAuthDto } from './dto/google-auth.dto';
 import { AuthUser } from '@/decorators/auth-user.decorator';
 import { AuthUserDto } from './dto/auth-user.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -45,11 +46,22 @@ export class AuthController {
     return { user, accessToken, refreshToken };
   }
 
+  @SerializeOptions({ groups: ['users'] })
+  @Post('google')
+  async googleAuth(@Body() googleAuthDto: GoogleAuthDto, @UserAgent() userAgent: string) {
+    console.log('Google Auth Token ID: ', googleAuthDto.tokenId);
+    const { accessToken, refreshToken, user } = await this.authService.googleAuth(
+      googleAuthDto.tokenId,
+      userAgent,
+    );
+
+    return { user, accessToken, refreshToken };
+  }
+
   @Get('me')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard())
   async getMe(@AuthUser() user: AuthUserDto): Promise<ApiResponseDto<AuthUserDto>> {
-    console.log(user);
     const freshUser = await this.userService.findOne(user.userId);
 
     if (!freshUser) {

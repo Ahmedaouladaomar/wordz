@@ -6,24 +6,30 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { OAuth2Client } from 'google-auth-library';
 import { ApiConfigService } from '@/shared/services/api-config.service';
 import { UserService } from '../user/user.service';
 import { SessionService } from '../session/session.service';
 import { EmailService } from '../email/email.service';
-import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
 import { User } from '../user/entities/user.entity';
 import { ResetPasswordDto } from '../user/dto/reset-password.dto';
+import { validateHash } from '@/common/utils/hash-generator';
 
 @Injectable()
 export class AuthService {
+  private googleAuthClient: OAuth2Client;
+
   constructor(
     private userService: UserService,
     private sessionService: SessionService,
     private jwtService: JwtService,
     private configService: ApiConfigService,
     private emailService: EmailService,
-  ) {}
+  ) {
+    const { clientId } = this.configService.googleAuthConfig;
+    this.googleAuthClient = new OAuth2Client(clientId);
+  }
 
   /**
    * @description Validates credentials and creates a new Session
@@ -36,10 +42,16 @@ export class AuthService {
     const user = await this.userService.findByEmail(email);
     if (!user) throw new UnauthorizedException();
 
-    const isMatch = await bcrypt.compare(pass, user.password);
-    if (!isMatch) throw new UnauthorizedException();
-
     if (!user.isEmailVerified) throw new BadRequestException('Please verify email!');
+
+    if (user.isGoogleAuth && !user.password) {
+      throw new BadRequestException(
+        "This account is associated with Google authentication. Please log in with Google. If you want to set a password, please use the 'Forgot Password' feature.",
+      );
+    }
+
+    const isMatch = await validateHash(pass, user.password);
+    if (!isMatch) throw new UnauthorizedException();
 
     return this.createAuthenticatedSession(user, userAgent);
   }
@@ -191,6 +203,72 @@ export class AuthService {
       accessToken,
       refreshToken: newRefreshToken,
     };
+  }
+
+  /**
+   * @description Handles Google OAuth login/signup for mobile apps
+   * @param tokenId - ID token from Google (from mobile Expo app)
+   * @param userAgent - User agent string
+   * @returns accessToken, refreshToken, and user info
+   */
+  async googleAuth(tokenId: string, userAgent: string) {
+    const { clientId } = this.configService.googleAuthConfig;
+    try {
+      // Verify the Google token
+      const ticket = await this.googleAuthClient.verifyIdToken({
+        idToken: tokenId,
+        audience: clientId,
+      });
+
+      const payload = ticket.getPayload();
+      if (!payload) {
+        throw new UnauthorizedException('Invalid Google token');
+      }
+
+      const { sub: googleId, email, given_name: firstName, family_name: lastName } = payload;
+
+      if (!email) {
+        throw new UnauthorizedException('Google account does not have an email');
+      }
+
+      // Check if user exists by Google ID
+      const user = await this.userService.findByGoogleId(googleId);
+
+      if (user) {
+        // Existing Google user - just create a new session
+        return this.createAuthenticatedSession(user, userAgent);
+      }
+
+      // Check if user exists by email
+      const existingUser = await this.userService.findByEmail(email);
+
+      if (existingUser) {
+        // User exists but not through Google OAuth
+        // Link Google account to existing user
+        existingUser.googleId = googleId;
+        existingUser.isGoogleAuth = true;
+        await this.userService.save(existingUser);
+        return this.createAuthenticatedSession(existingUser, userAgent);
+      }
+
+      // Create new user with Google OAuth
+      const newUser = await this.userService.create({
+        email,
+        firstName: firstName || 'User',
+        lastName: lastName || '',
+        password: '', // Google users don't have a password
+        googleId,
+        isGoogleAuth: true,
+        isEmailVerified: true, // Google email is already verified
+      } as RegisterDto);
+
+      return this.createAuthenticatedSession(newUser, userAgent);
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new UnauthorizedException('Google authentication failed');
+    }
   }
 
   /**

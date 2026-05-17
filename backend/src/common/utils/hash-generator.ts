@@ -1,29 +1,28 @@
 import bcrypt from 'bcrypt';
 
 /**
- * Generate hash from password
- * @param {string} password
- * @param {string} password
+ * Generate hash from string
+ * @param {string} str
  * @returns {string}
  */
-export function generateHash(password: string): string {
+export function generateHash(str: string): string {
   const salt = Number(process.env.BCRYPT_SALT_ROUNDS || 10);
-  return bcrypt.hashSync(password, salt);
+  return bcrypt.hashSync(str, salt);
 }
 
 /**
  * Validates text with hash
- * @param {string} password
+ * @param {string} str
  * @param {string} hash
  * @returns {Promise<boolean>}
  */
 export function validateHash(
-  password: string | undefined,
+  str: string | undefined,
   hash: string | undefined | null,
 ): Promise<boolean> {
-  if (!password || !hash) {
+  if (!str || !hash) {
     return Promise.resolve(false);
   }
 
-  return bcrypt.compare(password, hash);
+  return bcrypt.compare(str, hash);
 }

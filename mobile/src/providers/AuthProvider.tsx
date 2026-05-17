@@ -2,6 +2,7 @@ import { ScreenLoader } from "@/components/screen-loader";
 import { authService } from "@/services/authService";
 import { useAuthStore } from "@/store/auth-store";
 import type { User, UserCreatePayload } from "@/types/user";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { StorageHelper, StorageKeys } from "../helpers/storage.helper";
 
@@ -10,6 +11,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
+  loginWithGoogle: (idToken: string) => Promise<boolean>;
   register: (userCreatePayload: UserCreatePayload) => Promise<boolean>;
   logout: () => Promise<void>;
   verifyEmail: (email: string, code: string) => Promise<boolean>;
@@ -43,6 +45,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
+    const initializeGoogleSignIn = async () => {
+      try {
+        const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
+        const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+
+        if (!iosClientId || !webClientId) {
+          console.warn(
+            "Google Sign-In: Missing required environment variables. Please configure EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID, EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID, and EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID",
+          );
+          return;
+        }
+
+        await GoogleSignin.configure({
+          iosClientId,
+          webClientId,
+          offlineAccess: false,
+          forceCodeForRefreshToken: false,
+        });
+      } catch (error) {
+        console.warn("Google Sign-In initialization failed:", error);
+      }
+    };
+
     const checkAuth = async () => {
       try {
         const token = await StorageHelper.get<string>(StorageKeys.ACCESS_TOKEN);
@@ -68,6 +93,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     };
+
+    // Initialize Google Sign-In
+    initializeGoogleSignIn();
 
     // Delay for animation purposes
     const timeout = setTimeout(checkAuth, 500);
@@ -108,6 +136,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
       });
+
+      // Session data
+      const accessToken = response.data?.accessToken;
+      const refreshToken = response.data?.refreshToken;
+      const userData = response.data?.user as User;
+
+      if (accessToken && refreshToken) {
+        await setAuthData({
+          user: userData,
+          accessToken,
+          refreshToken,
+        });
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loginWithGoogle = async (tokenId: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      const response = await authService.loginWithGoogle(tokenId);
 
       // Session data
       const accessToken = response.data?.accessToken;
@@ -245,6 +299,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated,
         isLoading,
         login,
+        loginWithGoogle,
         register,
         logout,
         verifyEmail,

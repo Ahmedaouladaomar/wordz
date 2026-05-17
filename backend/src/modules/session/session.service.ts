@@ -1,10 +1,10 @@
 import { Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
 import { Session } from './entities/session.entity';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { ApiConfigService } from '@/shared/services/api-config.service';
+import { generateHash, validateHash } from '@/common/utils/hash-generator';
 
 @Injectable()
 export class SessionService {
@@ -27,13 +27,19 @@ export class SessionService {
   }
 
   /**
+   * Find session by ID and ensure it's active
+   * @param sessionId
+   * @returns
+   */
+  async findActiveById(sessionId: string) {
+    return this.sessionRepo.findOne({ where: { id: sessionId, isActive: true } });
+  }
+
+  /**
    * Rotation: Marks old token as used and issues a new one for the same session
    */
   async rotateToken(sessionId: string, oldToken: string, newToken: string) {
-    const session = await this.sessionRepo.findOne({
-      where: { id: sessionId, isActive: true },
-      relations: ['refreshTokens'],
-    });
+    const session = await this.findActiveById(sessionId);
 
     if (!session) throw new UnauthorizedException('Session is no longer active.');
 
@@ -45,7 +51,7 @@ export class SessionService {
     if (!activeRefreshToken) throw new UnauthorizedException('No active token found.');
 
     // Validate the incoming token against the stored hash
-    const isMatch = await bcrypt.compare(oldToken, activeRefreshToken.token);
+    const isMatch = await validateHash(oldToken, activeRefreshToken.token);
 
     if (!isMatch) {
       // SECURITY ALERT: Potential replay attack! Kill the entire session.
@@ -63,10 +69,9 @@ export class SessionService {
    * Issuing a new refresh token for the session
    */
   async updateRefreshToken(sessionId: string, token: string) {
-    const { saltRounds } = this.configService.bcryptConfig;
     const { refreshExpiresIn } = this.configService.authConfig;
 
-    const tokenHash = await bcrypt.hash(token, saltRounds);
+    const tokenHash = generateHash(token);
 
     const expiresAt = new Date();
     expiresAt.setSeconds(expiresAt.getSeconds() + refreshExpiresIn);

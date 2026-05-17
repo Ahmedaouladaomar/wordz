@@ -15,6 +15,12 @@ class AuthService extends BaseApiService {
     return this.handleRequest<AuthResponse>("/login", "post", payload);
   }
 
+  async loginWithGoogle(tokenId: string): Promise<ApiResponse<AuthResponse>> {
+    return this.handleRequest<AuthResponse>("/google", "post", {
+      tokenId,
+    });
+  }
+
   async register(payload: RegisterPayload): Promise<ApiResponse<AuthResponse>> {
     return this.handleRequest<AuthResponse>("/register", "post", payload);
   }

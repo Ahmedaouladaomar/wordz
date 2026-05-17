@@ -1,8 +1,12 @@
+import {
+  GoogleSignin,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
 import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import { toast } from "react-native-sonner";
-import { Text, View, XStack } from "tamagui";
+import { Separator, Text, View, XStack, YStack } from "tamagui";
 
 import { ThemedText } from "@/components/themed-text";
 import { Card } from "@/components/ui/card";
@@ -10,12 +14,13 @@ import { CircleSpinner } from "@/components/ui/circle-spinner";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { TextInput } from "@/components/ui/text-input";
 import { useAuth } from "@/providers/AuthProvider";
+import { Mail } from "@tamagui/lucide-icons";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, loginWithGoogle } = useAuth();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -41,6 +46,39 @@ export default function LoginScreen() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      const idToken = userInfo.data?.idToken;
+
+      if (!idToken) {
+        toast.error("Failed to get ID token from Google");
+        return;
+      }
+
+      const isLoggedIn = await loginWithGoogle(idToken);
+
+      if (isLoggedIn) {
+        toast.success("Login Successful!");
+        router.replace("/home" as any);
+      } else {
+        toast.error("Google login failed. Please try again");
+      }
+    } catch (error: any) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        toast.error("Sign in cancelled");
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        toast.error("Sign in already in progress");
+      } else {
+        // Show the actual error description to your UI toast
+        toast.error(
+          `Google sign-in failed: ${error.message || error.code || "Unknown Error"}`,
+        );
+      }
+    }
+  };
+
   const handleRegisterNavigation = () => {
     router.push("/register");
   };
@@ -54,9 +92,35 @@ export default function LoginScreen() {
       <Stack.Screen options={{ title: "Login", headerShown: false }} />
       <View style={styles.container} bg="$brandPrimaryLight">
         <Card px={25} py={40}>
-          <ThemedText type="title" style={styles.title}>
-            Login
-          </ThemedText>
+          <YStack ai="center" gap={5} mb={30}>
+            <Text color="$brandPrimary" fos="$xl" fow="700">
+              Get Started
+            </Text>
+            <Text fos="$md" color="$brandPrimary" fow="400">
+              Level up your vocabulary game.
+            </Text>
+          </YStack>
+
+          <TouchableOpacity
+            onPress={handleGoogleSignIn}
+            disabled={isLoading}
+            style={styles.googleButtonContainer}
+          >
+            <XStack style={styles.googleButton}>
+              <Mail width={20} height={20} color="#333" />
+              <Text style={styles.googleButtonText}>Sign in with Google</Text>
+            </XStack>
+          </TouchableOpacity>
+
+          <XStack jc="center" ai="center" my={10} gap={10}>
+            <Separator borderColor="#7eb5be46" flex={1} />
+            <Text color="$brandPrimary" fos="$sm" fow="600">
+              OR EMAIL
+            </Text>
+            <Separator borderColor="#7eb5be46" flex={1} />
+          </XStack>
+
+          {/* Email and Password Fields */}
           <TextInput
             label="Email"
             placeholder="test@example.com"
@@ -123,6 +187,25 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 40,
     fontSize: 32,
+  },
+  googleButtonContainer: {
+    marginBottom: 20,
+  },
+  googleButton: {
+    gap: 10,
+    borderWidth: 1,
+    borderColor: "#d0d0d0",
+    borderRadius: 12,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#ffffff",
+  },
+  googleButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333333",
   },
   forgotLink: {
     textAlign: "center",

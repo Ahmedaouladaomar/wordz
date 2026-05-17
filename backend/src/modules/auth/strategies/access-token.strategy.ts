@@ -5,12 +5,14 @@ import { ApiConfigService } from '../../../shared/services/api-config.service.js
 import { UserService } from '../../user/user.service.js';
 import { STRATEGIES } from '../constants/strategies.const.js';
 import { AuthUserDto } from '../dto/auth-user.dto.js';
+import { SessionService } from '../../session/session.service.js';
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(Strategy, STRATEGIES.ACCESS_TOKEN) {
   constructor(
     configService: ApiConfigService,
     private userService: UserService,
+    private sessionsService: SessionService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -20,9 +22,6 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, STRATEGIES.A
   }
 
   async validate(payload: { sub: string; email: string; sessionId: string; exp: any }) {
-    if (payload.exp < Date.now() / 1000) {
-      console.log('TOKEN IS EXPIRED IN VALIDATE');
-    }
     // Payload Validation
     if (!payload.sub || !payload.sessionId) {
       throw new UnauthorizedException('Invalid token payload');
@@ -33,6 +32,14 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, STRATEGIES.A
     // User Validation
     if (!user) {
       throw new UnauthorizedException('User not found');
+    }
+
+    const session = await this.sessionsService.findActiveById(payload.sessionId);
+    const isSessionValid = session && session.user?.id !== payload.sub;
+
+    // Session Validation
+    if (!isSessionValid) {
+      throw new UnauthorizedException('Invalid session');
     }
 
     // Return the user + Session info

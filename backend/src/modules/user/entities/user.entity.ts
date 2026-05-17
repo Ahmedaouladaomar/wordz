@@ -49,6 +49,12 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   city?: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  googleId?: string;
+
+  @Column({ default: false })
+  isGoogleAuth!: boolean;
+
   @OneToMany(() => RefreshToken, (rt) => rt.user, { onDelete: 'CASCADE' })
   refreshTokens?: RefreshToken[];
 

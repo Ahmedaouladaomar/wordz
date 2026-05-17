@@ -27,27 +27,9 @@ pnpm-debug.log*
 backend/nestjs-debug.log
 **/nestjs-debug.log
 
-# React Native / mobile
-mobile/android/app/build/
-mobile/android/.gradle/
-mobile/android/local.properties
-mobile/android/.idea/
-mobile/android/.cxx/
-mobile/android/.externalNativeBuild/
-mobile/android/gradle-wrapper.jar
-mobile/android/gradle-wrapper.properties
-mobile/android/gradle/
-mobile/android/app/*.keystore
-
-mobile/ios/Pods/
-mobile/ios/build/
-mobile/ios/DerivedData/
-mobile/ios/*.xcworkspace/
-mobile/ios/*.xcuserdata/
-mobile/ios/*.lock
-mobile/ios/Flutter/Flutter.framework/
-mobile/ios/Flutter/Flutter.podspec
-mobile/ios/ServiceDefinitions.json
+# Expo native directories (Generated Blueprints)
+mobile/ios
+mobile/android
 
 # Expo / Metro
 mobile/.expo/
