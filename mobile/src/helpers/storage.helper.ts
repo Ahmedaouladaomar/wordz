@@ -58,6 +58,20 @@ export class StorageHelper {
   }
 
   /**
+   * Saves all auth-related items in one go for easier session management.
+   * @param args
+   */
+  static async saveAuthItems(args: {
+    accessToken: string;
+    refreshToken: string;
+  }): Promise<void> {
+    await Promise.all([
+      this.save(StorageKeys.ACCESS_TOKEN, args.accessToken),
+      this.save(StorageKeys.REFRESH_TOKEN, args.refreshToken),
+    ]);
+  }
+
+  /**
    * Clears all auth-related items.
    */
   static async clearAuthSession(): Promise<void> {

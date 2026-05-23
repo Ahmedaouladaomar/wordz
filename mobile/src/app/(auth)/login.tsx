@@ -40,7 +40,7 @@ export default function LoginScreen() {
 
     if (isLoggedIn) {
       toast.success("Login Successful!");
-      router.replace("/home" as any);
+      router.replace("/(user)/words");
     } else {
       toast.error("Login failed. Invalid credentials");
     }
@@ -61,7 +61,7 @@ export default function LoginScreen() {
 
       if (isLoggedIn) {
         toast.success("Login Successful!");
-        router.replace("/home" as any);
+        router.replace("/(user)/words");
       } else {
         toast.error("Google login failed. Please try again");
       }
@@ -120,7 +120,6 @@ export default function LoginScreen() {
             <Separator borderColor="#7eb5be46" flex={1} />
           </XStack>
 
-          {/* Email and Password Fields */}
           <TextInput
             label="Email"
             placeholder="test@example.com"

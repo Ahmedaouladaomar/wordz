@@ -6,7 +6,7 @@ export default function AuthLayout() {
 
   // If already logged in, skip the login screen
   if (isAuthenticated) {
-    return <Redirect href="/home" />;
+    return <Redirect href="/(user)/words" />;
   }
 
   return <Stack screenOptions={{ headerShown: false }} />;

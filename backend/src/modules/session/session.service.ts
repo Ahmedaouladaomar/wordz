@@ -32,7 +32,10 @@ export class SessionService {
    * @returns
    */
   async findActiveById(sessionId: string) {
-    return this.sessionRepo.findOne({ where: { id: sessionId, isActive: true } });
+    return this.sessionRepo.findOne({
+      where: { id: sessionId, isActive: true },
+      relations: { refreshTokens: true },
+    });
   }
 
   /**

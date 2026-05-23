@@ -100,11 +100,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Delay for animation purposes
     const timeout = setTimeout(checkAuth, 500);
 
+    // Cleanup function to prevent state updates on unmounted component
     return () => {
       mounted = false;
       clearTimeout(timeout);
     };
-  }, []);
+  }, [setUser]);
 
   /**
    * Helper to sync auth related state and storage
@@ -120,10 +121,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setRefreshToken(args.refreshToken);
 
     // Setting tokens on local storage
-    await Promise.all([
-      StorageHelper.save(StorageKeys.ACCESS_TOKEN, args.accessToken),
-      StorageHelper.save(StorageKeys.REFRESH_TOKEN, args.refreshToken),
-    ]);
+    await StorageHelper.saveAuthItems({
+      accessToken: args.accessToken,
+      refreshToken: args.refreshToken,
+    });
 
     // Setting authenticated user
     setUser(args.user);
