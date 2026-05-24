@@ -1,7 +1,8 @@
 import { useColorScheme } from "@/hooks/useColorScheme";
+import "@tamagui/native/setup-teleport";
 import React from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { TamaguiProvider } from "tamagui";
+import { PortalProvider, TamaguiProvider } from "tamagui";
 import { tamaguiConfig } from "tamagui.config";
 import { AuthProvider } from "./AuthProvider";
 import { ReactQueryProvider } from "./ReactQueryProvider";
@@ -20,10 +21,12 @@ export function RootProvider({ children }: RootProviderProps) {
           config={tamaguiConfig}
           defaultTheme={colorScheme === "dark" ? "dark" : "light"}
         >
-          <AuthProvider>
-            {/* Add more providers here as needed */}
-            {children}
-          </AuthProvider>
+          <PortalProvider shouldAddRootHost>
+            <AuthProvider>
+              {/* Add more providers here as needed */}
+              {children}
+            </AuthProvider>
+          </PortalProvider>
         </TamaguiProvider>
       </ReactQueryProvider>
     </GestureHandlerRootView>

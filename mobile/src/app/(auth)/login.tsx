@@ -19,6 +19,7 @@ import { Mail } from "@tamagui/lucide-icons";
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loadingGoogleSignIn, setLoadingGoogleSignIn] = useState(false);
   const router = useRouter();
   const { login, isLoading, loginWithGoogle } = useAuth();
 
@@ -57,6 +58,8 @@ export default function LoginScreen() {
         return;
       }
 
+      setLoadingGoogleSignIn(true);
+
       const isLoggedIn = await loginWithGoogle(idToken);
 
       if (isLoggedIn) {
@@ -76,6 +79,8 @@ export default function LoginScreen() {
           `Google sign-in failed: ${error.message || error.code || "Unknown Error"}`,
         );
       }
+    } finally {
+      setLoadingGoogleSignIn(false);
     }
   };
 
@@ -107,8 +112,16 @@ export default function LoginScreen() {
             style={styles.googleButtonContainer}
           >
             <XStack style={styles.googleButton}>
-              <Mail width={20} height={20} color="#333" />
-              <Text style={styles.googleButtonText}>Sign in with Google</Text>
+              {loadingGoogleSignIn ? (
+                <CircleSpinner />
+              ) : (
+                <>
+                  <Mail width={20} height={20} color="#333" />
+                  <Text style={styles.googleButtonText}>
+                    Sign in with Google
+                  </Text>
+                </>
+              )}
             </XStack>
           </TouchableOpacity>
 
