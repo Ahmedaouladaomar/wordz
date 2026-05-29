@@ -45,7 +45,7 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, STRATEGIES.A
     // Return the user + Session info
     // This object becomes "req.user"
     return {
-      userId: user.id,
+      id: user.id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,

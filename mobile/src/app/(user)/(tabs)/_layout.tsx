@@ -71,7 +71,6 @@ export default function AppLayout() {
   return (
     <YStack f={1} bc="$brandPrimaryLight">
       <XStack style={[styles.topHeader, { paddingTop: insets.top }]}>
-        {/* 1. Left Action Column */}
         <XStack style={styles.headerLeft}>
           <SideMenuDrawer />
         </XStack>

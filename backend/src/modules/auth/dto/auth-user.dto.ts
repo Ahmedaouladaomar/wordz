@@ -1,7 +1,7 @@
 import { RoleType } from '@/constants/role-type';
 
 export class AuthUserDto {
-  readonly userId!: string;
+  readonly id!: string;
   readonly email!: string;
   readonly firstName!: string;
   readonly lastName!: string;
@@ -40,6 +40,6 @@ export class AuthUserDto {
    * Standardized log context
    */
   get logContext(): string {
-    return `[User: ${this.userId} | Role: ${this.role} | Session: ${this.sessionId}]`;
+    return `[User: ${this.id} | Role: ${this.role} | Session: ${this.sessionId}]`;
   }
 }

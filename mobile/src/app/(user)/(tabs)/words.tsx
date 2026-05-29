@@ -1,7 +1,11 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { WordCard } from "@/components/word-card";
 import { Colors } from "@/constants/theme";
-import React, { useState } from "react";
+import { vocabularyService } from "@/services/vocabularyService";
+import { Vocabulary } from "@/types/vocabulary";
+import { Plus, Search } from "@tamagui/lucide-icons";
+import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -9,63 +13,54 @@ import {
   TouchableOpacity,
   useColorScheme,
 } from "react-native";
+import { Text, useTheme, XStack } from "tamagui";
 
-interface Word {
-  id: string;
-  title: string;
-  description: string;
-  addedAt: Date;
-}
+const DEFAULT_TAKE = 3;
 
 export default function WordsScreen() {
   const colorScheme = useColorScheme();
+  const theme = useTheme();
   const isDark = colorScheme === "dark";
   const [searchQuery, setSearchQuery] = useState("");
-  const [words, setWords] = useState<Word[]>([
-    {
-      id: "1",
-      title: "Ephemeral",
-      description: "Lasting for a very short time",
-      addedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    },
-    {
-      id: "2",
-      title: "Serendipity",
-      description:
-        "The occurrence of events by chance in a happy or beneficial way",
-      addedAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
-    },
-    {
-      id: "3",
-      title: "Mellifluous",
-      description: "Sweet or musical; pleasant to hear",
-      addedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    },
-  ]);
+  const [words, setWords] = useState<Vocabulary[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredWords = words.filter(
+  useEffect(() => {
+    const fetchLatest = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await vocabularyService.getVocabularies({
+          orderBy: "createdAt",
+          sortOrder: "DESC",
+          take: DEFAULT_TAKE,
+        });
+        if (response.success && response.data) {
+          setWords(response.data.items);
+        } else {
+          setError(response.message || "Failed to fetch words");
+        }
+      } catch {
+        setError("An error occurred while fetching words");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchLatest();
+  }, []);
+
+  const filteredWords = words?.filter(
     (word) =>
-      word.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      word.description.toLowerCase().includes(searchQuery.toLowerCase()),
+      word.term.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      word.definition.toLowerCase().includes(searchQuery.toLowerCase()),
   );
-
-  const formatTimeAgo = (date: Date): string => {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (diffInSeconds < 60) return "just now";
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400)
-      return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    if (diffInSeconds < 604800)
-      return `${Math.floor(diffInSeconds / 86400)}d ago`;
-    return date.toLocaleDateString();
-  };
 
   const textColor = isDark ? Colors.dark.text : Colors.light.text;
   const iconColor = isDark ? Colors.dark.icon : Colors.light.icon;
-  const brandPrimary = "#006572";
-  const brandPrimaryLight = "#E1FBFF";
+  const brandPrimary = theme.brandPrimary?.get();
+  const brandPrimaryLight = theme.brandPrimaryLight?.get();
 
   return (
     <ThemedView style={styles.container}>
@@ -74,14 +69,15 @@ export default function WordsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Search Bar */}
-        <ThemedView
+        <XStack
           style={[
             styles.searchContainer,
             {
-              backgroundColor: isDark ? "#1a1a1a" : "#f5f5f5",
+              backgroundColor: isDark ? "#1a1a1a" : "white",
             },
           ]}
         >
+          <Search col="#29646A" />
           <TextInput
             style={[
               styles.searchInput,
@@ -90,18 +86,18 @@ export default function WordsScreen() {
               },
             ]}
             placeholder="Search words..."
-            placeholderTextColor={iconColor}
+            placeholderTextColor="#7EB6BE"
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
-        </ThemedView>
+        </XStack>
 
         {/* Streak Card */}
         <ThemedView
           style={[
             styles.streakCard,
             {
-              backgroundColor: brandPrimary,
+              backgroundColor: "#97EAF4",
             },
           ]}
         >
@@ -109,27 +105,27 @@ export default function WordsScreen() {
             style={[
               styles.streakLabel,
               {
-                color: "#fff",
+                color: brandPrimary,
               },
             ]}
           >
             🔥 Current Streak
           </ThemedText>
-          <ThemedText
+          <Text
             style={[
               styles.streakValue,
               {
-                color: "#fff",
+                color: brandPrimary,
               },
             ]}
           >
             7 Days
-          </ThemedText>
+          </Text>
           <ThemedText
             style={[
               styles.streakSubtext,
               {
-                color: "rgba(255, 255, 255, 0.8)",
+                color: brandPrimary,
               },
             ]}
           >
@@ -146,56 +142,79 @@ export default function WordsScreen() {
             },
           ]}
         >
-          Recently Added Words
+          Recently Added
         </ThemedText>
 
         {/* Words List */}
-        {filteredWords.length > 0 ? (
+        {isLoading ? (
+          <ThemedView
+            style={[
+              styles.emptyState,
+              {
+                backgroundColor: isDark ? "#1a1a1a" : brandPrimaryLight,
+                borderColor: brandPrimary,
+              },
+            ]}
+          >
+            <ThemedText
+              style={[
+                styles.emptyStateText,
+                {
+                  color: textColor,
+                },
+              ]}
+            >
+              Loading your words...
+            </ThemedText>
+          </ThemedView>
+        ) : error ? (
+          <ThemedView
+            style={[
+              styles.emptyState,
+              {
+                backgroundColor: isDark ? "#1a1a1a" : brandPrimaryLight,
+                borderColor: "#ff6b6b",
+              },
+            ]}
+          >
+            <ThemedText
+              style={[
+                styles.emptyStateText,
+                {
+                  color: "#ff6b6b",
+                },
+              ]}
+            >
+              Error Loading Words
+            </ThemedText>
+            <ThemedText
+              style={[
+                styles.emptyStateSubtext,
+                {
+                  color: textColor,
+                },
+              ]}
+            >
+              {error}
+            </ThemedText>
+          </ThemedView>
+        ) : filteredWords.length > 0 ? (
           <ThemedView style={styles.wordsList}>
             {filteredWords.map((word) => (
-              <ThemedView
+              <WordCard
                 key={word.id}
-                style={[
-                  styles.wordCard,
-                  {
-                    backgroundColor: isDark ? "#1a1a1a" : "#f9f9f9",
-                    borderColor: brandPrimaryLight,
-                  },
-                ]}
-              >
-                <ThemedView style={styles.wordHeader}>
-                  <ThemedText
-                    style={[
-                      styles.wordTitle,
-                      {
-                        color: brandPrimary,
-                      },
-                    ]}
-                  >
-                    {word.title}
-                  </ThemedText>
-                  <ThemedText
-                    style={[
-                      styles.wordTime,
-                      {
-                        color: iconColor,
-                      },
-                    ]}
-                  >
-                    {formatTimeAgo(word.addedAt)}
-                  </ThemedText>
-                </ThemedView>
-                <ThemedText
-                  style={[
-                    styles.wordDescription,
-                    {
-                      color: isDark ? "#ccc" : "#666",
-                    },
-                  ]}
-                >
-                  {word.description}
-                </ThemedText>
-              </ThemedView>
+                id={word.id}
+                title={word.term}
+                description={word.definition}
+                addedAt={new Date(word.createdAt)}
+                status="new"
+                onPronounce={() => {
+                  console.log(`Pronounce: ${word.term}`);
+                }}
+                onPractice={() => {
+                  console.log(`Practice: ${word.term}`);
+                }}
+              />
             ))}
           </ThemedView>
         ) : (
@@ -249,7 +268,7 @@ export default function WordsScreen() {
           console.log("Add new word");
         }}
       >
-        <ThemedText style={styles.fabIcon}>+</ThemedText>
+        <Plus col="white" />
       </TouchableOpacity>
     </ThemedView>
   );
@@ -258,6 +277,7 @@ export default function WordsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "transparent",
   },
   scrollContent: {
     paddingHorizontal: 16,
@@ -266,20 +286,23 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     marginBottom: 20,
-    borderRadius: 12,
-    paddingHorizontal: 12,
+    borderRadius: 30,
+    paddingHorizontal: 15,
     height: 44,
-    justifyContent: "center",
+    gap: 10,
+    justifyContent: "flex-start",
+    alignItems: "center",
   },
   searchInput: {
     fontSize: 16,
     height: 44,
   },
   streakCard: {
+    backgroundColor: "red",
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
-    shadowColor: "#000",
+    shadowColor: "gray",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
@@ -302,42 +325,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
+    marginLeft: 5,
     marginBottom: 12,
   },
   wordsList: {
+    backgroundColor: "transparent",
     marginBottom: 20,
     gap: 12,
-  },
-  wordCard: {
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1.5,
-    marginBottom: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  wordHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  wordTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    flex: 1,
-  },
-  wordTime: {
-    fontSize: 12,
-    fontWeight: "500",
-    marginLeft: 8,
-  },
-  wordDescription: {
-    fontSize: 14,
-    lineHeight: 20,
   },
   emptyState: {
     borderRadius: 12,

@@ -13,7 +13,6 @@ export class UserSubscriber implements EntitySubscriberInterface<User> {
   }
 
   beforeInsert(event: InsertEvent<User>): void {
-    console.log('Subscriber triggered!');
     if (event.entity.password) {
       event.entity.password = generateHash(event.entity.password);
     }

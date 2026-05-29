@@ -1,6 +1,4 @@
-// app/components/icons/AppLogo.tsx
 import React from "react";
-// Import native SVG primitives from your Expo runtime
 import Svg, { Rect, SvgProps } from "react-native-svg";
 
 export default function AppLogo({

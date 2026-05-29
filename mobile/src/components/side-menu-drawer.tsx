@@ -1,11 +1,11 @@
 import { useAuthStore } from "@/store/auth-store";
 import {
-    BookOpen,
-    LogOut,
-    Menu,
-    Target,
-    Trophy,
-    X,
+  BookOpen,
+  LogOut,
+  Menu,
+  Target,
+  Trophy,
+  X,
 } from "@tamagui/lucide-icons";
 import React, { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -88,11 +88,11 @@ export default function SideMenuDrawer() {
           <YStack gap="$2" mt="$4" flex={1}>
             <Button
               size="$4"
-              justifyContent="flex-start"
+              jc="flex-start"
               icon={Target}
-              backgroundColor="$brandPrimaryLight"
+              bc="$brandPrimaryLight"
               color="$brandPrimary"
-              borderRadius="$3"
+              br="$3"
               fontWeight="600"
             >
               Daily Goal
@@ -100,7 +100,7 @@ export default function SideMenuDrawer() {
 
             <Button
               size="$4"
-              justifyContent="flex-start"
+              jc="flex-start"
               icon={BookOpen}
               backgroundColor="$brandPrimaryLight"
               color="$brandPrimary"
@@ -112,11 +112,11 @@ export default function SideMenuDrawer() {
 
             <Button
               size="$4"
-              justifyContent="flex-start"
+              jc="flex-start"
               icon={Trophy}
-              backgroundColor="$brandPrimaryLight"
+              bc="$brandPrimaryLight"
               color="$brandPrimary"
-              borderRadius="$3"
+              br="$3"
               fontWeight="600"
             >
               Mastered

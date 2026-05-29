@@ -17,9 +17,6 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, TokenType.R
   }
 
   validate(req: Request, payload: { sub: string; sessionId: string }) {
-    console.log('hello from refresh token strategy!');
-    console.log(payload);
-
     const refreshHeader = req.headers.authorization as string;
     const refreshToken = refreshHeader?.split(' ')[1];
 

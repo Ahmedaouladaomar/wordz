@@ -42,8 +42,6 @@ export class AuthService {
     const user = await this.userService.findByEmail(email);
     if (!user) throw new UnauthorizedException();
 
-    if (!user.isEmailVerified) throw new BadRequestException('Please verify email!');
-
     if (user.isGoogleAuth && !user.password) {
       throw new BadRequestException(
         "This account is associated with Google authentication. Please log in with Google. If you want to set a password, please use the 'Forgot Password' feature.",

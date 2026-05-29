@@ -49,7 +49,6 @@ export class AuthController {
   @SerializeOptions({ groups: ['users'] })
   @Post('google')
   async googleAuth(@Body() googleAuthDto: GoogleAuthDto, @UserAgent() userAgent: string) {
-    console.log('Google Auth Token ID: ', googleAuthDto.tokenId);
     const { accessToken, refreshToken, user } = await this.authService.googleAuth(
       googleAuthDto.tokenId,
       userAgent,
@@ -62,7 +61,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard())
   async getMe(@AuthUser() user: AuthUserDto): Promise<ApiResponseDto<AuthUserDto>> {
-    const freshUser = await this.userService.findOne(user.userId);
+    const freshUser = await this.userService.findOne(user.id);
 
     if (!freshUser) {
       throw new NotFoundException('User not found');
