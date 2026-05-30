@@ -1,5 +1,5 @@
 import AppLogo from "@/components/icons/AppLogo";
-import SideMenuDrawer from "@/components/side-menu-drawer";
+import SideMenu from "@/components/side-menu";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import {
   Book,
@@ -72,7 +72,7 @@ export default function AppLayout() {
     <YStack f={1} bc="$brandPrimaryLight">
       <XStack style={[styles.topHeader, { paddingTop: insets.top }]}>
         <XStack style={styles.headerLeft}>
-          <SideMenuDrawer />
+          <SideMenu />
         </XStack>
 
         <XStack style={styles.headerCenter}>

@@ -1,4 +1,4 @@
-import { useAuthStore } from "@/store/auth-store";
+import { useAuth } from "@/providers/AuthProvider";
 import {
   BookOpen,
   LogOut,
@@ -11,10 +11,10 @@ import React, { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Avatar, Button, Dialog, H4, Paragraph, XStack, YStack } from "tamagui";
 
-export default function SideMenuDrawer() {
+export default function SideMenu() {
   const [open, setOpen] = useState(false);
   const insets = useSafeAreaInsets();
-  const { user, logout } = useAuthStore();
+  const { user, logout } = useAuth();
 
   const userName = user?.firstName
     ? `${user.firstName} ${user.lastName || ""}`.trim()

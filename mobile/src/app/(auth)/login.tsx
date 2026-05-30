@@ -98,10 +98,10 @@ export default function LoginScreen() {
       <View style={styles.container} bg="$brandPrimaryLight">
         <Card px={25} py={40}>
           <YStack ai="center" gap={5} mb={30}>
-            <Text color="$brandPrimary" fos="$xl" fow="700">
+            <Text col="$brandPrimary" fos="$xl" fow="700">
               Get Started
             </Text>
-            <Text fos="$md" color="$brandPrimary" fow="400">
+            <Text fos="$md" col="$brandPrimary" fow="400">
               Level up your vocabulary game.
             </Text>
           </YStack>
@@ -116,7 +116,7 @@ export default function LoginScreen() {
                 <CircleSpinner />
               ) : (
                 <>
-                  <Mail width={20} height={20} color="#333" />
+                  <Mail w={20} h={20} col="#333" />
                   <Text style={styles.googleButtonText}>
                     Sign in with Google
                   </Text>
@@ -126,11 +126,11 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           <XStack jc="center" ai="center" my={10} gap={10}>
-            <Separator borderColor="#7eb5be46" flex={1} />
-            <Text color="$brandPrimary" fos="$sm" fow="600">
+            <Separator borderColor="#7eb5be46" f={1} />
+            <Text col="$brandPrimary" fos="$sm" fow="600">
               OR EMAIL
             </Text>
-            <Separator borderColor="#7eb5be46" flex={1} />
+            <Separator borderColor="#7eb5be46" f={1} />
           </XStack>
 
           <TextInput
@@ -160,12 +160,12 @@ export default function LoginScreen() {
             mb={20}
             borderWidth={0}
             onPress={handleLogin}
-            disabled={isLoading}
+            disabled={isLoading || loadingGoogleSignIn}
           >
-            {isLoading ? (
+            {isLoading && !loadingGoogleSignIn ? (
               <CircleSpinner color="white" />
             ) : (
-              <Text color="white" fos="$lg">
+              <Text col="white" fos="$lg">
                 Login
               </Text>
             )}

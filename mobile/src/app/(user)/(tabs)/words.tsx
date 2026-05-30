@@ -1,6 +1,8 @@
+import { AddWord } from "@/components/add-word";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { WordCard } from "@/components/word-card";
+import { WordDetails } from "@/components/word-details";
 import { Colors } from "@/constants/theme";
 import { vocabularyService } from "@/services/vocabularyService";
 import { Vocabulary } from "@/types/vocabulary";
@@ -10,10 +12,10 @@ import {
   ScrollView,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
   useColorScheme,
 } from "react-native";
-import { Text, useTheme, XStack } from "tamagui";
+import { toast } from "react-native-sonner";
+import { Button, Text, useTheme, XStack } from "tamagui";
 
 const DEFAULT_TAKE = 3;
 
@@ -25,6 +27,9 @@ export default function WordsScreen() {
   const [words, setWords] = useState<Vocabulary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedWord, setSelectedWord] = useState<Vocabulary | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [addWordModalVisible, setAddWordModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchLatest = async () => {
@@ -61,6 +66,16 @@ export default function WordsScreen() {
   const iconColor = isDark ? Colors.dark.icon : Colors.light.icon;
   const brandPrimary = theme.brandPrimary?.get();
   const brandPrimaryLight = theme.brandPrimaryLight?.get();
+
+  const handleWordPress = (word: Vocabulary) => {
+    setSelectedWord(word);
+    setModalVisible(true);
+  };
+
+  const handlePlaySound = () => {
+    // TODO: Implement text-to-speech functionality
+    console.log(`Playing pronunciation for: ${selectedWord?.term}`);
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -208,6 +223,7 @@ export default function WordsScreen() {
                 description={word.definition}
                 addedAt={new Date(word.createdAt)}
                 status="new"
+                onPress={() => handleWordPress(word)}
                 onPronounce={() => {
                   console.log(`Pronounce: ${word.term}`);
                 }}
@@ -256,7 +272,9 @@ export default function WordsScreen() {
       </ScrollView>
 
       {/* Floating Action Button */}
-      <TouchableOpacity
+      <Button
+        icon={<Plus size={25} col="white" />}
+        br={30}
         style={[
           styles.fab,
           {
@@ -264,12 +282,42 @@ export default function WordsScreen() {
           },
         ]}
         onPress={() => {
-          // Navigate to add word screen
-          console.log("Add new word");
+          setAddWordModalVisible(true);
         }}
-      >
-        <Plus col="white" />
-      </TouchableOpacity>
+      />
+
+      {/* Word Details Modal */}
+      <WordDetails
+        visible={modalVisible}
+        word={selectedWord}
+        onClose={() => setModalVisible(false)}
+        onPlaySound={handlePlaySound}
+      />
+
+      {/* Add Word Modal */}
+      <AddWord
+        visible={addWordModalVisible}
+        onClose={() => setAddWordModalVisible(false)}
+        onSuccess={() => {
+          toast.success("Word added successfully!");
+          // Refresh the word list
+          const fetchLatest = async () => {
+            try {
+              const response = await vocabularyService.getVocabularies({
+                orderBy: "createdAt",
+                sortOrder: "DESC",
+                take: DEFAULT_TAKE,
+              });
+              if (response.success && response.data) {
+                setWords(response.data.items);
+              }
+            } catch {
+              console.error("Failed to refresh words");
+            }
+          };
+          fetchLatest();
+        }}
+      />
     </ThemedView>
   );
 }
@@ -358,9 +406,6 @@ const styles = StyleSheet.create({
     right: 24,
     width: 60,
     height: 60,
-    borderRadius: 30,
-    alignItems: "center",
-    justifyContent: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,

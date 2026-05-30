@@ -2,6 +2,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import "@tamagui/native/setup-teleport";
 import React from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Toaster } from "react-native-sonner";
 import { PortalProvider, TamaguiProvider } from "tamagui";
 import { tamaguiConfig } from "tamagui.config";
 import { AuthProvider } from "./AuthProvider";
@@ -28,6 +29,7 @@ export function RootProvider({ children }: RootProviderProps) {
             </AuthProvider>
           </PortalProvider>
         </TamaguiProvider>
+        <Toaster />
       </ReactQueryProvider>
     </GestureHandlerRootView>
   );

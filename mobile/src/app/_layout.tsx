@@ -7,7 +7,6 @@ import {
 } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Toaster } from "react-native-sonner";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -21,7 +20,6 @@ export default function RootLayout() {
           <Stack.Screen name="(user)" />
         </Stack>
         <StatusBar style="auto" />
-        <Toaster />
       </ThemeProvider>
     </RootProvider>
   );

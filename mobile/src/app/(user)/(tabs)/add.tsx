@@ -155,6 +155,7 @@ const styles = StyleSheet.create({
   },
   headerSection: {
     marginBottom: 32,
+    paddingHorizontal: 5,
   },
   headerTitle: {
     fontWeight: "700",

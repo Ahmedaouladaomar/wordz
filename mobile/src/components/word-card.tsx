@@ -14,6 +14,7 @@ interface WordCardProps {
   status: "new" | "mastered" | "favourite";
   onPronounce?: () => void;
   onPractice?: () => void;
+  onPress?: () => void;
 }
 
 export function WordCard({
@@ -23,6 +24,7 @@ export function WordCard({
   status,
   onPronounce,
   onPractice,
+  onPress,
 }: WordCardProps) {
   const colorScheme = useColorScheme();
   const theme = useTheme();
@@ -31,7 +33,7 @@ export function WordCard({
 
   const getStatusBadge = () => {
     if (status === "favourite") {
-      return <Star size={20} color={brandPrimary} fill={brandPrimary} />;
+      return <Star size={20} col={brandPrimary} fill={brandPrimary} />;
     }
     return (
       <ThemedText
@@ -53,93 +55,95 @@ export function WordCard({
   };
 
   return (
-    <ThemedView
-      style={[
-        styles.card,
-        {
-          backgroundColor: isDark ? "#1a1a1a" : "white",
-          borderColor: isDark ? "#2a2a2a" : "white",
-        },
-      ]}
-    >
-      <XStack style={styles.header}>
-        <ThemedText
-          style={[
-            styles.title,
-            {
-              color: brandPrimary,
-              flex: 1,
-            },
-          ]}
-        >
-          {title}
-        </ThemedText>
-        {getStatusBadge()}
-      </XStack>
-
-      {/* Description */}
-      <ThemedText
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+      <ThemedView
         style={[
-          styles.description,
+          styles.card,
           {
-            color: isDark ? "#ccc" : "#666",
+            backgroundColor: isDark ? "#1a1a1a" : "white",
+            borderColor: isDark ? "#2a2a2a" : "white",
           },
         ]}
       >
-        {description}
-      </ThemedText>
-
-      {(status === "new" ||
-        status === "mastered" ||
-        status === "favourite") && (
-        <XStack style={styles.footer}>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={status === "mastered" ? onPronounce : onPractice}
-          >
-            <XStack style={styles.actionContent}>
-              {status === "mastered" ? (
-                <Volume2 size={16} color={brandPrimary} />
-              ) : (
-                <FileQuestion size={16} color={brandPrimary} />
-              )}
-              <ThemedText
-                style={[
-                  styles.actionText,
-                  {
-                    color: brandPrimary,
-                  },
-                ]}
-              >
-                {status === "mastered" ? "Pronounce" : "Practice"}
-              </ThemedText>
-            </XStack>
-          </TouchableOpacity>
-
+        <XStack style={styles.header}>
           <ThemedText
             style={[
-              styles.separator,
+              styles.title,
               {
-                color: isDark ? "#444" : "#ccc",
+                color: brandPrimary,
+                flex: 1,
               },
             ]}
           >
-            •
+            {title}
           </ThemedText>
-
-          <ThemedText
-            style={[
-              styles.timeText,
-              {
-                color: isDark ? "#888" : "#999",
-              },
-            ]}
-          >
-            Added {formatTimeAgo(addedAt)}
-          </ThemedText>
+          {getStatusBadge()}
         </XStack>
-      )}
-    </ThemedView>
+
+        {/* Description */}
+        <ThemedText
+          style={[
+            styles.description,
+            {
+              color: isDark ? "#ccc" : "#666",
+            },
+          ]}
+        >
+          {description}
+        </ThemedText>
+
+        {(status === "new" ||
+          status === "mastered" ||
+          status === "favourite") && (
+          <XStack style={styles.footer}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={status === "mastered" ? onPronounce : onPractice}
+            >
+              <XStack style={styles.actionContent}>
+                {status === "mastered" ? (
+                  <Volume2 size={16} col={brandPrimary} />
+                ) : (
+                  <FileQuestion size={16} col={brandPrimary} />
+                )}
+                <ThemedText
+                  style={[
+                    styles.actionText,
+                    {
+                      color: brandPrimary,
+                    },
+                  ]}
+                >
+                  {status === "mastered" ? "Pronounce" : "Practice"}
+                </ThemedText>
+              </XStack>
+            </TouchableOpacity>
+
+            <ThemedText
+              style={[
+                styles.separator,
+                {
+                  color: isDark ? "#444" : "#ccc",
+                },
+              ]}
+            >
+              •
+            </ThemedText>
+
+            <ThemedText
+              style={[
+                styles.timeText,
+                {
+                  color: isDark ? "#888" : "#999",
+                },
+              ]}
+            >
+              Added {formatTimeAgo(addedAt)}
+            </ThemedText>
+          </XStack>
+        )}
+      </ThemedView>
+    </TouchableOpacity>
   );
 }
 
