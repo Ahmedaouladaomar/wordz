@@ -7,6 +7,7 @@ import { UpdateVocabularyDto } from './dto/update-vocabulary.dto';
 import { PageDto } from '@/common/dto/page.dto';
 import { PageMetaDto } from '@/common/dto/page-meta.dto';
 import { PaginationQueryDto } from '@/common/dto/pagination-query.dto';
+import { VocabularyFilterDto } from './dto/vocabulary-filter.dto';
 
 @Injectable()
 export class VocabularyService {
@@ -29,7 +30,11 @@ export class VocabularyService {
   /**
    * Find all vocabulary entries for a user with pagination, ordering, and search
    */
-  async findAll(userId: string, paginationQuery: PaginationQueryDto): Promise<PageDto<Vocabulary>> {
+  async findAll(
+    userId: string,
+    paginationQuery: PaginationQueryDto,
+    vocabularyFilterDto?: VocabularyFilterDto,
+  ): Promise<PageDto<Vocabulary>> {
     const {
       page = 1,
       take = 10,
@@ -42,6 +47,10 @@ export class VocabularyService {
     const where: any = { userId };
     if (search) {
       where.term = Like(`%${search}%`);
+    }
+
+    if (typeof vocabularyFilterDto?.isMastered === 'boolean') {
+      where.isMastered = vocabularyFilterDto?.isMastered;
     }
 
     // Build order clause
@@ -64,9 +73,9 @@ export class VocabularyService {
   /**
    * Find one vocabulary entry by ID
    */
-  async findOne(id: string, userId: string): Promise<Vocabulary> {
+  async findOne(id: string): Promise<Vocabulary> {
     const vocabulary = await this.vocabularyRepository.findOne({
-      where: { id, userId },
+      where: { id },
     });
     if (!vocabulary) {
       throw new NotFoundException(`Vocabulary with ID "${id}" not found.`);
@@ -74,15 +83,15 @@ export class VocabularyService {
     return vocabulary;
   }
 
+  async save(vocabulary: Vocabulary): Promise<Vocabulary> {
+    return await this.vocabularyRepository.save(vocabulary);
+  }
+
   /**
    * Update a vocabulary entry
    */
-  async update(
-    id: string,
-    updateVocabularyDto: UpdateVocabularyDto,
-    userId: string,
-  ): Promise<Vocabulary> {
-    const vocabulary = await this.findOne(id, userId);
+  async update(id: string, updateVocabularyDto: UpdateVocabularyDto): Promise<Vocabulary> {
+    const vocabulary = await this.findOne(id);
     Object.assign(vocabulary, updateVocabularyDto);
     return await this.vocabularyRepository.save(vocabulary);
   }
@@ -90,8 +99,8 @@ export class VocabularyService {
   /**
    * Remove a vocabulary entry
    */
-  async remove(id: string, userId: string): Promise<void> {
-    const vocabulary = await this.findOne(id, userId);
+  async remove(id: string): Promise<void> {
+    const vocabulary = await this.findOne(id);
     await this.vocabularyRepository.remove(vocabulary);
   }
 }

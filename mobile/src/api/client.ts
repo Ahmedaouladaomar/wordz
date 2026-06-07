@@ -7,6 +7,10 @@ const baseURL = process.env.EXPO_PUBLIC_API_BASE_URL;
 let isRefreshing = false;
 let promisesQueue: any[] = [];
 
+// Pauses execution for a specified number of milliseconds. Basically for animation purposes.
+export const delay = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
 // This function clears the waiting room once the new token arrives
 const processQueue = (error: any, token: string | null = null) => {
   promisesQueue.forEach((prom) => {

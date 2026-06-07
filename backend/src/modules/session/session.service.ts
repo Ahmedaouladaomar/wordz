@@ -1,15 +1,22 @@
-import { Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Session } from './entities/session.entity';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { ApiConfigService } from '@/shared/services/api-config.service';
 import { generateHash, validateHash } from '@/common/utils/hash-generator';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class SessionService {
   constructor(
     private readonly configService: ApiConfigService,
+    private readonly userService: UserService,
     @InjectRepository(Session)
     private sessionRepo: Repository<Session>,
     @InjectRepository(RefreshToken)
@@ -20,6 +27,9 @@ export class SessionService {
    * Create a new device session and its first refresh token (Login)
    */
   async create(userId: string, userAgent: string) {
+    const user = await this.userService.findOne(userId);
+    if (!user) throw new NotFoundException('User not found!');
+
     const session = this.sessionRepo.create({ user: { id: userId }, userAgent });
     await this.sessionRepo.save(session);
 

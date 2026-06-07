@@ -28,29 +28,22 @@ export class VocabularyController {
   }
 
   @Get()
-  findAll(
-    @AuthUser() user: User,
-    @Query() paginationQuery: PaginationQueryDto,
-  ) {
+  findAll(@AuthUser() user: User, @Query() paginationQuery: PaginationQueryDto) {
     return this.vocabularyService.findAll(user.id, paginationQuery);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @AuthUser() user: User) {
-    return this.vocabularyService.findOne(id, user.id);
+  findOne(@Param('id') id: string) {
+    return this.vocabularyService.findOne(id);
   }
 
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateVocabularyDto: UpdateVocabularyDto,
-    @AuthUser() user: User,
-  ) {
-    return this.vocabularyService.update(id, updateVocabularyDto, user.id);
+  update(@Param('id') id: string, @Body() updateVocabularyDto: UpdateVocabularyDto) {
+    return this.vocabularyService.update(id, updateVocabularyDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string, @AuthUser() user: User) {
-    return this.vocabularyService.remove(id, user.id);
+  remove(@Param('id') id: string) {
+    return this.vocabularyService.remove(id);
   }
 }

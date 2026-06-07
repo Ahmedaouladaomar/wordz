@@ -19,12 +19,7 @@ export default function AddScreen() {
 
   // Fetch trending vocabularies
   useEffect(() => {
-    const fetchTrendingWords = async () => {
-      const response = await vocabularyService.getTrendingVocabularies();
-      if (response.success && response.data) {
-        setTrendingWords([]);
-      }
-    };
+    const fetchTrendingWords = async () => {};
     fetchTrendingWords();
   }, []);
 

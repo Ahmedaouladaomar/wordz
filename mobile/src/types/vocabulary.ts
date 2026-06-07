@@ -4,6 +4,7 @@ export interface Vocabulary {
   definition: string;
   example: string;
   userId: string;
+  isMastered: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -12,10 +13,4 @@ export interface CreateVocabularyPayload {
   term: string;
   definition: string;
   example: string;
-}
-
-export interface TrendingVocabulary {
-  id: string;
-  word: string;
-  count: number;
 }

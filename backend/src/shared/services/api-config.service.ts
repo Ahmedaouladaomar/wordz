@@ -79,6 +79,7 @@ export class ApiConfigService {
       password: this.getString('DB_PASSWORD'),
       database: this.getString('DB_DATABASE'),
       logging: this.getBoolean('ENABLE_ORM_LOGS'),
+      useUTC: true,
     };
   }
 

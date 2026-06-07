@@ -25,8 +25,14 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   password!: string;
 
-  @Column({ default: 5 })
+  @Column({ default: 3 })
   dailyTarget!: number;
+
+  @Column({ type: 'int', default: 0, nullable: false })
+  streak!: number;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  lastStreakIncrementDate?: Date;
 
   @Column({ default: false })
   isEmailVerified!: boolean;

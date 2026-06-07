@@ -1,9 +1,10 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Migrations1779993183317 implements MigrationInterface {
-    name = 'Migrations1779993183317'
+export class UserStreak1780121275257 implements MigrationInterface {
+    name = 'UserStreak1780121275257'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`ALTER TABLE "users" ADD "streak" integer NOT NULL DEFAULT '1'`);
         await queryRunner.query(`ALTER TABLE "practices" DROP COLUMN "createdAt"`);
         await queryRunner.query(`ALTER TABLE "practices" ADD "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()`);
         await queryRunner.query(`ALTER TABLE "practices" DROP COLUMN "updatedAt"`);
@@ -20,17 +21,9 @@ export class Migrations1779993183317 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "users" ADD "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()`);
         await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "updatedAt"`);
         await queryRunner.query(`ALTER TABLE "users" ADD "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()`);
-        await queryRunner.query(`ALTER TABLE "vocabularies" DROP COLUMN "createdAt"`);
-        await queryRunner.query(`ALTER TABLE "vocabularies" ADD "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()`);
-        await queryRunner.query(`ALTER TABLE "vocabularies" DROP COLUMN "updatedAt"`);
-        await queryRunner.query(`ALTER TABLE "vocabularies" ADD "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "vocabularies" DROP COLUMN "updatedAt"`);
-        await queryRunner.query(`ALTER TABLE "vocabularies" ADD "updatedAt" TIMESTAMP NOT NULL DEFAULT now()`);
-        await queryRunner.query(`ALTER TABLE "vocabularies" DROP COLUMN "createdAt"`);
-        await queryRunner.query(`ALTER TABLE "vocabularies" ADD "createdAt" TIMESTAMP NOT NULL DEFAULT now()`);
         await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "updatedAt"`);
         await queryRunner.query(`ALTER TABLE "users" ADD "updatedAt" TIMESTAMP NOT NULL DEFAULT now()`);
         await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "createdAt"`);
@@ -47,6 +40,7 @@ export class Migrations1779993183317 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "practices" ADD "updatedAt" TIMESTAMP NOT NULL DEFAULT now()`);
         await queryRunner.query(`ALTER TABLE "practices" DROP COLUMN "createdAt"`);
         await queryRunner.query(`ALTER TABLE "practices" ADD "createdAt" TIMESTAMP NOT NULL DEFAULT now()`);
+        await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "streak"`);
     }
 
 }

@@ -1,9 +1,11 @@
-import { IsNumber, Min } from 'class-validator';
+import { IsNumber, IsString, Min } from 'class-validator';
 
 export class CreatePracticeDto {
-  @IsNumber()
-  @Min(0)
-  score: number = 0;
+  @IsString()
+  userId!: string;
+
+  @IsString()
+  practiceDate!: string;
 
   @IsNumber()
   @Min(1)

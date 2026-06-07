@@ -4,6 +4,7 @@ import { ThemedView } from "@/components/themed-view";
 import { WordCard } from "@/components/word-card";
 import { WordDetails } from "@/components/word-details";
 import { Colors } from "@/constants/theme";
+import { useAuth } from "@/providers/AuthProvider";
 import { vocabularyService } from "@/services/vocabularyService";
 import { Vocabulary } from "@/types/vocabulary";
 import { Plus, Search } from "@tamagui/lucide-icons";
@@ -22,6 +23,7 @@ const DEFAULT_TAKE = 3;
 export default function WordsScreen() {
   const colorScheme = useColorScheme();
   const theme = useTheme();
+  const { user } = useAuth();
   const isDark = colorScheme === "dark";
   const [searchQuery, setSearchQuery] = useState("");
   const [words, setWords] = useState<Vocabulary[]>([]);
@@ -134,7 +136,7 @@ export default function WordsScreen() {
               },
             ]}
           >
-            7 Days
+            {user?.streak} Days
           </Text>
           <ThemedText
             style={[
@@ -144,7 +146,7 @@ export default function WordsScreen() {
               },
             ]}
           >
-            Keep it up! Add more words to maintain your streak.
+            Keep it up! Practice to maintain your streak.
           </ThemedText>
         </ThemedView>
 

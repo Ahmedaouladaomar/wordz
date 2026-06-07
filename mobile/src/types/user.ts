@@ -5,6 +5,8 @@ export interface User {
   lastName?: string;
   avatarUrl?: string;
   role?: string;
+  streak?: number;
+  dailyTarget: number;
   level?: number;
   totalWords?: number;
   createdAt?: string;

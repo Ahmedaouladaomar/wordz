@@ -87,7 +87,7 @@ export class UserService {
     // Merge changes into the existing user object
     Object.assign(user, updateUserDto);
 
-    return await this.userRepository.save(user);
+    return await this.save(user);
   }
 
   /**
@@ -104,6 +104,16 @@ export class UserService {
   async updateDailyTarget(id: string, target: number): Promise<User> {
     const user = await this.findOne(id);
     user.dailyTarget = target;
+    return await this.userRepository.save(user);
+  }
+
+  /**
+   * Update only the streak
+   */
+  async updateStreak(id: string, streak: number, date?: Date): Promise<User> {
+    const user = await this.findOne(id);
+    user.streak = streak;
+    user.lastStreakIncrementDate = date;
     return await this.userRepository.save(user);
   }
 

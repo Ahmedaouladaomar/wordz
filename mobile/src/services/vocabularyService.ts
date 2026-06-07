@@ -1,8 +1,7 @@
 import { ApiResponse } from "@/types/api";
 import {
-    CreateVocabularyPayload,
-    TrendingVocabulary,
-    Vocabulary,
+  CreateVocabularyPayload,
+  Vocabulary
 } from "@/types/vocabulary";
 import { BaseApiService } from "./baseApiService";
 
@@ -62,13 +61,6 @@ class VocabularyService extends BaseApiService {
    */
   async deleteVocabulary(vocabularyId: string): Promise<ApiResponse<void>> {
     return this.handleRequest<void>(`/${vocabularyId}`, "delete");
-  }
-
-  /**
-   * Get trending vocabularies
-   */
-  async getTrendingVocabularies(): Promise<ApiResponse<TrendingVocabulary[]>> {
-    return this.handleRequest<TrendingVocabulary[]>("/trending", "get");
   }
 }
 
