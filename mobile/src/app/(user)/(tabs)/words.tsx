@@ -289,12 +289,14 @@ export default function WordsScreen() {
       />
 
       {/* Word Details Modal */}
-      <WordDetails
-        visible={modalVisible}
-        word={selectedWord}
-        onClose={() => setModalVisible(false)}
-        onPlaySound={handlePlaySound}
-      />
+      {selectedWord && (
+        <WordDetails
+          visible={modalVisible}
+          word={selectedWord}
+          onClose={() => setModalVisible(false)}
+          onPlaySound={handlePlaySound}
+        />
+      )}
 
       {/* Add Word Modal */}
       <AddWord

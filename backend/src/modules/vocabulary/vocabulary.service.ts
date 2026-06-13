@@ -35,6 +35,8 @@ export class VocabularyService {
     paginationQuery: PaginationQueryDto,
     vocabularyFilterDto?: VocabularyFilterDto,
   ): Promise<PageDto<Vocabulary>> {
+    console.log('paginationQuery =>', paginationQuery);
+    console.log('vocabularyFilterDto =>', vocabularyFilterDto);
     const {
       page = 1,
       take = 10,
@@ -53,6 +55,10 @@ export class VocabularyService {
       where.isMastered = vocabularyFilterDto?.isMastered;
     }
 
+    if (typeof vocabularyFilterDto?.isFavourite === 'boolean') {
+      where.isFavourite = vocabularyFilterDto?.isFavourite;
+    }
+
     // Build order clause
     const order: any = {};
     const validOrderFields = ['id', 'term', 'definition', 'example', 'createdAt', 'updatedAt'];
@@ -66,7 +72,7 @@ export class VocabularyService {
       order,
     });
 
-    const pageMeta = new PageMetaDto(page, take, vocabularies.length, total);
+    const pageMeta = new PageMetaDto(page, take, total);
     return new PageDto(vocabularies, pageMeta);
   }
 

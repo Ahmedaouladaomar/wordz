@@ -4,8 +4,10 @@ import { Vocabulary } from '../../vocabulary/entities/vocabulary.entity';
 import { Practice } from '@/modules/practice/entities/practice.entity';
 import { RefreshToken } from '@/modules/session/entities/refresh-token.entity';
 import { Session } from '@/modules/session/entities/session.entity';
-import { Exclude } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import { RoleType } from '@/constants/role-type';
+import { USER_LEVELS } from '@/constants/user-levels';
+import { type UserLevel } from '@/constants/user-levels';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -60,6 +62,18 @@ export class User extends BaseEntity {
 
   @Column({ default: false })
   isGoogleAuth!: boolean;
+
+  @Expose()
+  get level(): UserLevel {
+    const sortedLevels = [...USER_LEVELS].sort((a, b) => b.totalWords - a.totalWords);
+    const matchedLvl = sortedLevels.find((lvl) => this.totalWords >= lvl.totalWords);
+    return matchedLvl || USER_LEVELS[USER_LEVELS.length - 1];
+  }
+
+  @Expose()
+  get totalWords() {
+    return this.vocabularies?.filter((v) => v.isMastered)?.length || 0;
+  }
 
   @OneToMany(() => RefreshToken, (rt) => rt.user, { onDelete: 'CASCADE' })
   refreshTokens?: RefreshToken[];

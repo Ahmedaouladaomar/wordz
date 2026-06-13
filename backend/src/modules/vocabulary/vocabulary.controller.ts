@@ -15,7 +15,7 @@ import { UpdateVocabularyDto } from './dto/update-vocabulary.dto';
 import { AuthGuard } from '@/guards/auth.guard';
 import { AuthUser } from '@/decorators/auth-user.decorator';
 import { User } from '@/modules/user/entities/user.entity';
-import { PaginationQueryDto } from '@/common/dto/pagination-query.dto';
+import { VocabularyQueryDto } from './dto/vocabulary-query.dto';
 
 @UseGuards(AuthGuard())
 @Controller('vocabulary')
@@ -28,8 +28,10 @@ export class VocabularyController {
   }
 
   @Get()
-  findAll(@AuthUser() user: User, @Query() paginationQuery: PaginationQueryDto) {
-    return this.vocabularyService.findAll(user.id, paginationQuery);
+  findAll(@AuthUser() user: User, @Query() query: VocabularyQueryDto) {
+    const { isFavourite, isMastered, ...pagination } = query;
+
+    return this.vocabularyService.findAll(user.id, pagination, { isFavourite, isMastered });
   }
 
   @Get(':id')

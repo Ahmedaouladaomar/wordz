@@ -20,7 +20,6 @@ export class Practice extends BaseEntity {
   user!: User;
 
   @OneToMany(() => Vocabulary, (vocabulary) => vocabulary.practice, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'vocabularyId' })
   vocabularies?: Vocabulary[];
 
   @Column()

@@ -1,12 +1,11 @@
 import { delay } from "@/api/client";
 import { CircleSpinner } from "@/components/ui/circle-spinner";
-import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { practiceService } from "@/services/practiceService";
 import { useAuthStore } from "@/store/auth-store";
 import { Practice } from "@/types/practice";
 import { Vocabulary } from "@/types/vocabulary";
-import { RotateCcw } from "@tamagui/lucide-icons";
+import { PartyPopper, RotateCcw } from "@tamagui/lucide-icons";
 import { FlipHorizontal2 } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, StyleSheet } from "react-native";
@@ -29,8 +28,6 @@ export default function PracticeScreen() {
   const [practice, setPractice] = useState<Practice | undefined>(undefined);
   const [words, setWords] = useState<Vocabulary[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
-
-  const textColor = isDark ? Colors.dark.text : Colors.light.text;
 
   const getUnmastered = async () => {
     const res = await practiceService.getUnmasteredTerms();
@@ -191,17 +188,13 @@ export default function PracticeScreen() {
                 },
               ]}
             >
-              <Text
-                style={[
-                  styles.emptyStateText,
-                  {
-                    color: textColor,
-                  },
-                ]}
-              >
-                🎉 All Set!
-              </Text>
-              <Text fos="$sm" ta="center" w="80%" col="gray">
+              <XStack ai="center" gap={10} mb={15}>
+                <PartyPopper size={40} />
+                <Text fos="$xl" fow={700}>
+                  All Set!
+                </Text>
+              </XStack>
+              <Text fow="500" fos="$md" ta="center" w="70%" col="gray">
                 You've mastered all your words for today. Keep up the great
                 work!
               </Text>
@@ -438,17 +431,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     height: 350,
     borderWidth: 1,
-    shadowColor: "#000",
+    shadowColor: "gray",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
-  },
-  emptyStateText: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginBottom: 12,
-    textAlign: "center",
   },
   emptyStateSubtext: {
     fontSize: 14,

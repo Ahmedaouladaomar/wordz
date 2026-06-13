@@ -65,6 +65,12 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.764229799030-ilsta32iicf5e73iouvu4ivqcesq2qqe"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you upload vocabulary images."
+        }
       ]
     ],
     "experiments": {

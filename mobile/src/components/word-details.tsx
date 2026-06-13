@@ -1,7 +1,8 @@
 import { ThemedText } from "@/components/themed-text";
+import { vocabularyService } from "@/services/vocabularyService";
 import { Vocabulary } from "@/types/vocabulary";
-import { Volume2, X } from "@tamagui/lucide-icons";
-import React from "react";
+import { Heart, Volume2, X } from "@tamagui/lucide-icons";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   Pressable,
@@ -10,11 +11,12 @@ import {
   useColorScheme,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { toast } from "react-native-sonner";
 import { Text, useTheme, XStack, YStack } from "tamagui";
 
 interface WordDetailsModalProps {
   visible: boolean;
-  word: Vocabulary | null;
+  word: Vocabulary;
   onClose: () => void;
   onPlaySound?: () => void;
 }
@@ -31,7 +33,25 @@ export function WordDetails({
   const isDark = colorScheme === "dark";
   const brandPrimary = theme.brandPrimary?.get();
 
-  if (!word) return null;
+  const [vocabulary, setVocabulary] = useState<Vocabulary>(word);
+
+  const toggleFavourite = async () => {
+    const oldIsFavourite = vocabulary.isFavourite;
+    const response = await vocabularyService.updateVocabulary(vocabulary.id, {
+      isFavourite: !oldIsFavourite,
+    });
+    if (response.success) {
+      setVocabulary((prev) => ({ ...prev, isFavourite: !oldIsFavourite }));
+    }
+    try {
+    } catch {
+      toast.error("Something went wrong");
+    }
+  };
+
+  useEffect(() => {
+    setVocabulary(word);
+  }, [word]);
 
   return (
     <Modal
@@ -77,16 +97,19 @@ export function WordDetails({
           {/* Term and Pronunciation */}
           <YStack style={styles.section}>
             <XStack style={styles.termContainer} jc="space-between" ai="center">
-              <ThemedText
-                style={[
-                  styles.term,
-                  {
-                    color: brandPrimary,
-                  },
-                ]}
-              >
-                {word.term}
-              </ThemedText>
+              <XStack ai="center" gap={10}>
+                <ThemedText style={[styles.term, { color: brandPrimary }]}>
+                  {vocabulary.term}
+                </ThemedText>
+                <TouchableOpacity onPress={toggleFavourite}>
+                  <Heart
+                    size={22}
+                    col="$brandPrimary"
+                    fill={vocabulary.isFavourite ? brandPrimary : "transparent"}
+                  />
+                </TouchableOpacity>
+              </XStack>
+
               <TouchableOpacity
                 onPress={onPlaySound}
                 style={[
@@ -132,7 +155,7 @@ export function WordDetails({
                 },
               ]}
             >
-              {word.definition}
+              {vocabulary.definition}
             </ThemedText>
           </YStack>
 
@@ -158,7 +181,7 @@ export function WordDetails({
                 },
               ]}
             >
-              {word.example}
+              {vocabulary.example}
             </ThemedText>
           </YStack>
         </YStack>
@@ -245,7 +268,6 @@ const styles = StyleSheet.create({
   term: {
     fontSize: 24,
     fontWeight: "700",
-    flex: 1,
   },
   soundButton: {
     width: 44,

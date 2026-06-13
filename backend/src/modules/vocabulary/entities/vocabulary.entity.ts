@@ -17,6 +17,9 @@ export class Vocabulary extends BaseEntity {
   @Column()
   userId!: string;
 
+  @Column({ nullable: true })
+  practiceId?: string;
+
   @Column({ type: 'boolean', default: false })
   isFavourite!: boolean;
 

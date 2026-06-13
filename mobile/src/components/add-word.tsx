@@ -53,7 +53,7 @@ export function AddWord({ visible, onClose, onSuccess }: Props) {
   const onSubmit = async (data: FormInputs) => {
     setIsLoading(true);
     try {
-      const response = await vocabularyService.createvocabulary({
+      const response = await vocabularyService.createVocabulary({
         term: data.word.trim(),
         definition: data.definition.trim(),
         example: data.example.trim(),

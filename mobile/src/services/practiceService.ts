@@ -10,6 +10,7 @@ export const practiceQueryKeys = {
   unmasteredTerms: () =>
     [...practiceQueryKeys.all, "terms", "unmastered"] as const,
   today: () => [...practiceQueryKeys.all, "today"] as const,
+  dailyGoal: () => [...practiceQueryKeys.all, "dailyGoal"] as const,
 };
 
 class PracticeService extends BaseApiService {
@@ -78,6 +79,25 @@ class PracticeService extends BaseApiService {
    */
   async deletePractice(practiceId: string): Promise<ApiResponse<void>> {
     return this.handleRequest<void>(`/${practiceId}`, "delete");
+  }
+
+  /**
+   * Get daily goal progress
+   */
+  async getDailyGoalProgress(): Promise<
+    ApiResponse<{
+      goal: number;
+      completed: number;
+      remaining: number;
+      practice?: Practice;
+    }>
+  > {
+    return this.handleRequest<{
+      goal: number;
+      completed: number;
+      remaining: number;
+      practice?: Practice;
+    }>("/daily-goal", "get");
   }
 }
 

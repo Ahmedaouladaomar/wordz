@@ -10,4 +10,13 @@ export class VocabularyFilterDto {
     return value;
   })
   isMastered?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => {
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    return value;
+  })
+  isFavourite?: boolean;
 }

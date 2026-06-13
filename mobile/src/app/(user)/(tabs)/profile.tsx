@@ -1,8 +1,8 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { ImagePicker } from "@/components/ui/image-picker";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useAuth } from "@/providers/AuthProvider";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { ScrollView, StyleSheet } from "react-native";
 
@@ -21,11 +21,7 @@ export default function ProfileScreen() {
               { backgroundColor: isDark ? "#333" : "#e0e0e0" },
             ]}
           >
-            <MaterialCommunityIcons
-              name="account"
-              size={48}
-              color={isDark ? "#fff" : "#000"}
-            />
+            <ImagePicker onImageSelected={() => {}} />
           </ThemedView>
           <ThemedText style={styles.name}>
             {user?.firstName} {user?.lastName}

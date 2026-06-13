@@ -1,8 +1,5 @@
 import { ApiResponse } from "@/types/api";
-import {
-  CreateVocabularyPayload,
-  Vocabulary
-} from "@/types/vocabulary";
+import { CreateVocabularyPayload, Vocabulary } from "@/types/vocabulary";
 import { BaseApiService } from "./baseApiService";
 
 // Query keys
@@ -12,6 +9,8 @@ export const vocabularyQueryKeys = {
   detail: (vocabularyId: string) =>
     [...vocabularyQueryKeys.all, "detail", vocabularyId] as const,
   trending: () => [...vocabularyQueryKeys.all, "trending"] as const,
+  favorites: () => [...vocabularyQueryKeys.all, "favorites"] as const,
+  mastered: () => [...vocabularyQueryKeys.all, "mastered"] as const,
 };
 
 class VocabularyService extends BaseApiService {
@@ -20,7 +19,7 @@ class VocabularyService extends BaseApiService {
   /**
    * Create a new vocabulary entry
    */
-  async createvocabulary(
+  async createVocabulary(
     payload: CreateVocabularyPayload,
   ): Promise<ApiResponse<Vocabulary>> {
     return this.handleRequest<Vocabulary>("", "post", payload);
@@ -53,7 +52,7 @@ class VocabularyService extends BaseApiService {
     vocabularyId: string,
     payload: Partial<CreateVocabularyPayload>,
   ): Promise<ApiResponse<Vocabulary>> {
-    return this.handleRequest<Vocabulary>(`/${vocabularyId}`, "put", payload);
+    return this.handleRequest<Vocabulary>(`/${vocabularyId}`, "patch", payload);
   }
 
   /**
@@ -61,6 +60,46 @@ class VocabularyService extends BaseApiService {
    */
   async deleteVocabulary(vocabularyId: string): Promise<ApiResponse<void>> {
     return this.handleRequest<void>(`/${vocabularyId}`, "delete");
+  }
+
+  /**
+   * Get favourite vocabularies for the current user
+   */
+  async getFavorites(
+    params = {},
+  ): Promise<ApiResponse<{ items: Vocabulary[]; meta: any }>> {
+    return this.handleRequest<{ items: Vocabulary[]; meta: any }>(
+      "/favorites",
+      "get",
+      params,
+    );
+  }
+
+  /**
+   * Get mastered vocabularies for the current user
+   */
+  async getMastered(
+    params = {},
+  ): Promise<ApiResponse<{ items: Vocabulary[]; meta: any }>> {
+    return this.handleRequest<{ items: Vocabulary[]; meta: any }>(
+      "/mastered",
+      "get",
+      params,
+    );
+  }
+
+  /**
+   * Toggle favorite status of a vocabulary
+   */
+  async toggleFavorite(vocabularyId: string): Promise<ApiResponse<Vocabulary>> {
+    return this.handleRequest<Vocabulary>(`/${vocabularyId}/favorite`, "patch");
+  }
+
+  /**
+   * Toggle mastered status of a vocabulary
+   */
+  async toggleMastered(vocabularyId: string): Promise<ApiResponse<Vocabulary>> {
+    return this.handleRequest<Vocabulary>(`/${vocabularyId}/mastered`, "patch");
   }
 }
 

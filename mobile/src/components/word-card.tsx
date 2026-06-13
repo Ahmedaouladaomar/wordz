@@ -1,7 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { formatTimeAgo } from "@/helpers/date.helper";
-import { FileQuestion, Star, Volume2 } from "@tamagui/lucide-icons";
+import { FileQuestion, Heart, Volume2 } from "@tamagui/lucide-icons";
 import React from "react";
 import { StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
 import { useTheme, XStack } from "tamagui";
@@ -33,7 +33,7 @@ export function WordCard({
 
   const getStatusBadge = () => {
     if (status === "favourite") {
-      return <Star size={20} col={brandPrimary} fill={brandPrimary} />;
+      return <Heart size={20} col={brandPrimary} fill={brandPrimary} />;
     }
     return (
       <ThemedText
@@ -96,39 +96,43 @@ export function WordCard({
           status === "mastered" ||
           status === "favourite") && (
           <XStack style={styles.footer}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={status === "mastered" ? onPronounce : onPractice}
-            >
-              <XStack style={styles.actionContent}>
-                {status === "mastered" ? (
-                  <Volume2 size={16} col={brandPrimary} />
-                ) : (
-                  <FileQuestion size={16} col={brandPrimary} />
-                )}
+            {onPractice && (
+              <>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={status === "mastered" ? onPronounce : onPractice}
+                >
+                  <XStack style={styles.actionContent}>
+                    {status === "mastered" ? (
+                      <Volume2 size={16} col={brandPrimary} />
+                    ) : (
+                      <FileQuestion size={16} col={brandPrimary} />
+                    )}
+                    <ThemedText
+                      style={[
+                        styles.actionText,
+                        {
+                          color: brandPrimary,
+                        },
+                      ]}
+                    >
+                      {status === "mastered" ? "Pronounce" : "Practice"}
+                    </ThemedText>
+                  </XStack>
+                </TouchableOpacity>
+
                 <ThemedText
                   style={[
-                    styles.actionText,
+                    styles.separator,
                     {
-                      color: brandPrimary,
+                      color: isDark ? "#444" : "#ccc",
                     },
                   ]}
                 >
-                  {status === "mastered" ? "Pronounce" : "Practice"}
+                  •
                 </ThemedText>
-              </XStack>
-            </TouchableOpacity>
-
-            <ThemedText
-              style={[
-                styles.separator,
-                {
-                  color: isDark ? "#444" : "#ccc",
-                },
-              ]}
-            >
-              •
-            </ThemedText>
+              </>
+            )}
 
             <ThemedText
               style={[
@@ -138,7 +142,7 @@ export function WordCard({
                 },
               ]}
             >
-              Added {formatTimeAgo(addedAt)}
+              Added {formatTimeAgo(addedAt)} ago
             </ThemedText>
           </XStack>
         )}

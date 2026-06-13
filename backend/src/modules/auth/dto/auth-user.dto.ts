@@ -1,4 +1,7 @@
+import { Expose } from 'class-transformer';
 import { RoleType } from '@/constants/role-type';
+import { USER_LEVELS } from '@/constants/user-levels';
+import { type UserLevel } from '@/constants/user-levels';
 
 export class AuthUserDto {
   readonly id!: string;
@@ -10,9 +13,22 @@ export class AuthUserDto {
   readonly city?: string;
   readonly dailyTarget?: number;
   readonly refreshToken!: string;
+  readonly vocabularies?: any[];
 
   constructor(user: AuthUserDto) {
     Object.assign(this, user);
+  }
+
+  @Expose()
+  get totalWords(): number {
+    return this.vocabularies?.filter((v) => v.isMastered)?.length || 0;
+  }
+
+  @Expose()
+  get level(): UserLevel {
+    const sortedLevels = [...USER_LEVELS].sort((a, b) => b.totalWords - a.totalWords);
+    const matchedLvl = sortedLevels.find((lvl) => this.totalWords >= lvl.totalWords);
+    return matchedLvl || USER_LEVELS[0];
   }
 
   /**

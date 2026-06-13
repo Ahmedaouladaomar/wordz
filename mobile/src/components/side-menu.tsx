@@ -1,22 +1,34 @@
 import { useAuth } from "@/providers/AuthProvider";
 import {
-  BookOpen,
+  Heart,
   LogOut,
   Menu,
   Target,
   Trophy,
+  User,
   X,
 } from "@tamagui/lucide-icons";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Avatar, Button, Dialog, H4, Paragraph, XStack, YStack } from "tamagui";
+import {
+  Avatar,
+  Button,
+  Dialog,
+  H4,
+  Paragraph,
+  Text,
+  XStack,
+  YStack,
+} from "tamagui";
 
 export default function SideMenu() {
   const [open, setOpen] = useState(false);
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
+  const router = useRouter();
 
-  const userName = user?.firstName
+  const fullName = user?.firstName
     ? `${user.firstName} ${user.lastName || ""}`.trim()
     : user?.email || "User";
 
@@ -30,62 +42,74 @@ export default function SideMenu() {
         <Dialog.Overlay
           key="overlay"
           animation="quick"
-          opacity={0.5}
           onPress={() => setOpen(false)}
-          enterStyle={{ opacity: 0 }}
-          exitStyle={{ opacity: 0 }}
+          enterStyle={{ o: 0 }}
+          exitStyle={{ o: 0 }}
         />
-        {/* 3. The Side Sheet Container */}
+        {/* The Side Sheet Container */}
         <Dialog.Content
           key="content"
           animation="200ms"
-          position="absolute"
-          left={0}
-          top={0}
-          bottom={0}
-          width={"100%"}
-          height="100%"
-          borderRadius={0}
-          padding="$5"
+          pos="absolute"
+          l={0}
+          t={0}
+          b={0}
+          w={"100%"}
+          h="100%"
+          br={0}
+          px={0}
+          py="$5"
           x={0}
           elevation={0}
-          shadowOpacity={0.3}
+          shop={0.3}
           enterStyle={{ x: "-100%" }}
           exitStyle={{
             x: "-100%",
             elevation: 0,
-            shadowOpacity: 0,
+            shop: 0,
           }}
-          backgroundColor="$background"
+          bc="$background"
         >
-          <XStack jc="space-between" mb="$2" style={{ paddingTop: insets.top }}>
-            <YStack f={1} pb="$4" bbc="$brandPrimary" bbw={1} ai="center">
+          <XStack
+            jc="space-between"
+            mb="$2"
+            pt={insets.top}
+            bbc="#7eb5be46"
+            bbw={1}
+          >
+            <YStack f={1} pb="$4" pl="$5" ai="flex-start">
               <XStack ai="center" gap="$3.5" w="100%">
                 <Avatar circular size="$5" backgroundColor="$brandPrimary">
                   <Avatar.Image source={{ uri: user?.avatarUrl }} />
-                  <Avatar.Fallback></Avatar.Fallback>
+                  <Avatar.Fallback jc="center" ai="center">
+                    <User size={25} col="white" />
+                  </Avatar.Fallback>
                 </Avatar>
-                <YStack flex={1}>
-                  <H4 size="$4" fontWeight="600" numberOfLines={1}>
-                    {userName}
+                <YStack f={1}>
+                  <H4 size="$4" fow="600" numberOfLines={1}>
+                    {fullName}
                   </H4>
-                  <Paragraph size="$2" color="$colorMuted">
-                    Level {user?.level || 1}
-                  </Paragraph>
+                  <XStack ai="center" gap={3}>
+                    <Paragraph size="$2" col="$colorMuted">
+                      Level {user?.level?.rank || 1}
+                    </Paragraph>
+                    <Text col="$brandPrimary" fos={20}>
+                      •
+                    </Text>
+                    <Paragraph col="$brandPrimary" tt="capitalize" fow="600">
+                      {user?.level?.title}
+                    </Paragraph>
+                  </XStack>
                 </YStack>
               </XStack>
-
-              <Paragraph size="$3" color="$brandPrimary" fontWeight="600">
-                {user?.totalWords || 0} Words Learned
-              </Paragraph>
             </YStack>
-            <Dialog.Close asChild>
-              <Button icon={X} size="$4" chromeless circular />
+            <Dialog.Close asChild mr="$5">
+              <Button icon={X} size={40} chromeless circular />
             </Dialog.Close>
           </XStack>
 
           {/* Navigation Menu Items */}
-          <YStack gap="$2" mt="$4" flex={1}>
+          <YStack gap="$2" mt="$4" f={1} pl="$4">
             <Button
               size="$4"
               jc="flex-start"
@@ -101,13 +125,17 @@ export default function SideMenu() {
             <Button
               size="$4"
               jc="flex-start"
-              icon={BookOpen}
-              backgroundColor="$brandPrimaryLight"
+              ai="center"
+              icon={Heart}
+              bc="$brandPrimaryLight"
               color="$brandPrimary"
-              borderRadius="$3"
+              br="$3"
               fontWeight="600"
+              onPress={() => {
+                router.push("/(user)/favourites");
+              }}
             >
-              Categories
+              Favourites
             </Button>
 
             <Button
@@ -126,6 +154,7 @@ export default function SideMenu() {
           <Button
             size="$4"
             icon={LogOut}
+            ml="$4"
             color="red"
             fontWeight="600"
             onPress={() => {
@@ -133,6 +162,7 @@ export default function SideMenu() {
               setOpen(false);
             }}
             mt="$4"
+            als="flex-start"
           >
             Logout
           </Button>

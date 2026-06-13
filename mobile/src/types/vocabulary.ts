@@ -5,12 +5,15 @@ export interface Vocabulary {
   example: string;
   userId: string;
   isMastered: boolean;
-  createdAt: string;
-  updatedAt: string;
+  isFavourite: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CreateVocabularyPayload {
   term: string;
   definition: string;
   example: string;
+  isMastered?: boolean;
+  isFavourite?: boolean;
 }

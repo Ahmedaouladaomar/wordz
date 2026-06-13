@@ -1,17 +1,19 @@
 import { isSameDate } from '@/common/utils/date-helpers';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { UserService } from '../user/user.service';
 import { VocabularyService } from '../vocabulary/vocabulary.service';
 import { CreatePracticeDto } from './dto/create-practice.dto';
 import { UpdatePracticeDto } from './dto/update-practice.dto';
 import { Practice } from './entities/practice.entity';
 import { PaginationQueryDto } from '@/common/dto/pagination-query.dto';
+import { Vocabulary } from '../vocabulary/entities/vocabulary.entity';
 
 @Injectable()
 export class PracticeService {
   constructor(
+    @InjectDataSource() private dataSource: DataSource,
     private readonly usersService: UserService,
     private readonly vocabularyService: VocabularyService,
     @InjectRepository(Practice)
@@ -30,6 +32,7 @@ export class PracticeService {
     const practice = this.practiceRepository.create({
       ...createPracticeDto,
       user: existingUser, // Explicitly link the existing user object
+      vocabularies: [],
       totalWords: 0, // Explicitly initialize progress at 0
     });
 
@@ -141,10 +144,11 @@ export class PracticeService {
       throw new BadRequestException('Cannot exceed daily target!');
 
     practice.totalWords = updateTotalWordsDto.totalWords;
-    vocabulary.isMastered = true;
     if (updateTotalWordsDto.totalWords === practice.user.dailyTarget) {
       practice.isCompleted = true;
     }
+    vocabulary.practice = practice;
+    vocabulary.isMastered = true;
 
     await this.vocabularyService.save(vocabulary);
 
@@ -187,8 +191,23 @@ export class PracticeService {
   /**
    * Remove a practice session and their related data
    */
-  async remove(id: string): Promise<void> {
-    const practice = await this.findOne(id);
-    await this.practiceRepository.remove(practice);
+  async remove(sessionId: string) {
+    return await this.dataSource.transaction(async (entityManager) => {
+      const practice = await entityManager.findOne(Practice, {
+        where: { id: sessionId },
+        relations: ['vocabularies'],
+      });
+
+      const masteredWords = practice?.vocabularies?.filter((w) => w.isMastered === true) || [];
+
+      if (masteredWords.length > 0) {
+        const vocabulariesIds = masteredWords.map((w) => w.id);
+
+        await entityManager.update(Vocabulary, { id: In(vocabulariesIds) }, { isMastered: false });
+      }
+
+      await entityManager.remove(Practice, practice);
+      return { success: true };
+    });
   }
 }

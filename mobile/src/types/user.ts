@@ -7,10 +7,16 @@ export interface User {
   role?: string;
   streak?: number;
   dailyTarget: number;
-  level?: number;
+  level?: UserLevel;
   totalWords?: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface UserLevel {
+  rank: number;
+  totalWords: number;
+  title: string;
 }
 
 export interface UserCreatePayload {
