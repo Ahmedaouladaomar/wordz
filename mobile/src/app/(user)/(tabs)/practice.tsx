@@ -5,12 +5,12 @@ import { practiceService } from "@/services/practiceService";
 import { useAuthStore } from "@/store/auth-store";
 import { Practice } from "@/types/practice";
 import { Vocabulary } from "@/types/vocabulary";
-import { PartyPopper, RotateCcw } from "@tamagui/lucide-icons";
+import { BookOpen, PartyPopper, RotateCcw } from "@tamagui/lucide-icons";
 import { FlipHorizontal2 } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, StyleSheet } from "react-native";
 import { Pressable, ScrollView } from "react-native-gesture-handler";
-import { Button, Separator, Text, View, XStack } from "tamagui";
+import { Button, Separator, Text, View, XStack, YStack } from "tamagui";
 
 export default function PracticeScreen() {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -199,7 +199,7 @@ export default function PracticeScreen() {
                 work!
               </Text>
             </View>
-            <Button bc="#CBF9FF" mt={30} br="$10" onPress={handleStillLearning}>
+            <Button bc="#abf3fd" mt={30} br="$10" onPress={handleStillLearning}>
               {loadingState.loadingStillLearning ? (
                 <CircleSpinner color="#006572" />
               ) : (
@@ -212,7 +212,7 @@ export default function PracticeScreen() {
               )}
             </Button>
           </ScrollView>
-        ) : (
+        ) : words.length > 0 ? (
           <>
             <Pressable style={styles.cardContainer} onPress={flipCard}>
               {/* Flipable Card */}
@@ -319,6 +319,25 @@ export default function PracticeScreen() {
               )}
             </Button>
           </>
+        ) : (
+          <View
+            style={[
+              styles.emptyState,
+              {
+                backgroundColor: isDark ? "#1a1a1a" : "white",
+              },
+            ]}
+          >
+            <YStack px={10} ai="center" jc="center" mb={15} gap={10}>
+              <BookOpen size={40} />
+              <Text ta="center" fos="$xl" fow={700} w="auto" fs={1}>
+                No more words to practice
+              </Text>
+            </YStack>
+            <Text ta="center" fow="500" fos="$md" w="70%" col="gray">
+              Add more words to continue practicing
+            </Text>
+          </View>
         )}
       </ScrollView>
     </View>

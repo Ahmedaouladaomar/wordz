@@ -41,7 +41,7 @@ export default function LoginScreen() {
 
     if (isLoggedIn) {
       toast.success("Login Successful!");
-      router.replace("/(user)/words");
+      router.replace("/(user)/words" as any);
     } else {
       toast.error("Login failed. Invalid credentials");
     }
@@ -64,7 +64,7 @@ export default function LoginScreen() {
 
       if (isLoggedIn) {
         toast.success("Login Successful!");
-        router.replace("/(user)/words");
+        router.replace("/(user)/words" as any);
       } else {
         toast.error("Google login failed. Please try again");
       }
@@ -126,11 +126,11 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           <XStack jc="center" ai="center" my={10} gap={10}>
-            <Separator borderColor="#7eb5be46" f={1} />
+            <Separator boc="#7eb5be46" f={1} />
             <Text col="$brandPrimary" fos="$sm" fow="600">
               OR EMAIL
             </Text>
-            <Separator borderColor="#7eb5be46" f={1} />
+            <Separator boc="#7eb5be46" f={1} />
           </XStack>
 
           <TextInput

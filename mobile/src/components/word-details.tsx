@@ -14,19 +14,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "react-native-sonner";
 import { Text, useTheme, XStack, YStack } from "tamagui";
 
-interface WordDetailsModalProps {
+interface Props {
   visible: boolean;
   word: Vocabulary;
   onClose: () => void;
   onPlaySound?: () => void;
 }
 
-export function WordDetails({
-  visible,
-  word,
-  onClose,
-  onPlaySound,
-}: WordDetailsModalProps) {
+export function WordDetails({ visible, word, onClose, onPlaySound }: Props) {
   const colorScheme = useColorScheme();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -103,7 +98,7 @@ export function WordDetails({
                 </ThemedText>
                 <TouchableOpacity onPress={toggleFavourite}>
                   <Heart
-                    size={22}
+                    size={20}
                     col="$brandPrimary"
                     fill={vocabulary.isFavourite ? brandPrimary : "transparent"}
                   />
@@ -270,8 +265,8 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   soundButton: {
-    width: 44,
-    height: 44,
+    width: 35,
+    height: 35,
     borderRadius: 22,
     justifyContent: "center",
     alignItems: "center",

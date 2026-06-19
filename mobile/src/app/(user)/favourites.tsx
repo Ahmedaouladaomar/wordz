@@ -3,17 +3,20 @@ import { CircleSpinner } from "@/components/ui/circle-spinner";
 import { WordCard } from "@/components/word-card";
 import { vocabularyService } from "@/services/vocabularyService";
 import { Vocabulary } from "@/types/vocabulary";
-import { ArrowLeft, Heart } from "@tamagui/lucide-icons";
-import { useRouter } from "expo-router";
+import { ArrowLeft } from "@tamagui/lucide-icons";
 import React, { useEffect, useState } from "react";
 import { FlatList } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "react-native-sonner";
-import { Anchor, Button, H2, Paragraph, Text, XStack, YStack } from "tamagui";
+import { Anchor, Button, Paragraph, Text, XStack, YStack } from "tamagui";
 
-export default function FavouritesScreen() {
+interface Props {
+  onBack: () => any;
+  [key: string]: any;
+}
+
+export default function FavouritesScreen({ onBack, ...styles }: Props) {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   const [favorites, setFavorites] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>();
 
@@ -22,18 +25,19 @@ export default function FavouritesScreen() {
 
   const [page, setPage] = useState(1);
 
-  console.log(meta);
-
   const hasNextPage = meta && meta.hasNextPage;
 
-  const fetchFavourites = async () => {
+  const getFavourites = async () => {
     const isFirstPage = page === 1;
     const setIsLoading = isFirstPage ? setIsInitLoading : setIsLoadingMore;
+
+    if (!isFirstPage && isLoadingMore) return;
+
     try {
       setIsLoading(true);
 
       const response = await vocabularyService.getVocabularies({
-        page: 1,
+        page,
         orderBy: "createdAt",
         sortOrder: "DESC",
         take: 4,
@@ -43,7 +47,11 @@ export default function FavouritesScreen() {
       await delay(500);
 
       if (response.success && response.data) {
-        setFavorites(response.data.items);
+        const newValues = isFirstPage
+          ? response.data.items
+          : [...favorites, ...response.data.items];
+
+        setFavorites(newValues);
         setMeta(response.data.meta);
       } else {
         toast.error(response.message || "Failed to fetch words");
@@ -56,20 +64,16 @@ export default function FavouritesScreen() {
   };
 
   useEffect(() => {
-    fetchFavourites();
+    getFavourites();
   }, [page]);
-
-  const removeFavorite = (id: string) => {
-    setFavorites((prev) => prev.filter((item) => item.id !== id));
-  };
 
   const onLoadMore = () => {
     setPage((prev) => prev + 1);
   };
 
-  // Render Card Component using Tamagui layout primitives
   const renderItem = ({ item }: { item: Vocabulary }) => (
     <WordCard
+      key={item.id}
       id={item.id}
       status="favourite"
       title={item.term}
@@ -95,65 +99,63 @@ export default function FavouritesScreen() {
     );
 
   return (
-    <YStack f={1} bc="$brandPrimaryLight" pt={insets.top}>
+    <YStack f={1} bc="$brandPrimaryLight" pt={insets.top} {...styles}>
       {/* Header Section */}
       <XStack
         bc="$background"
-        bbw={1}
         boc="#7eb5be46"
+        bbw={1}
         px="$5"
-        py="$4"
+        pb="$3"
+        mb="$2"
         ai="center"
         jc="space-between"
       >
-        <YStack>
+        <XStack f={1}>
+          <Button icon={ArrowLeft} size={45} onPress={onBack} />
+        </XStack>
+        <YStack f={1} ai="center">
           <XStack ai="center" gap="$3">
-            <Heart size={24} col="$brandPrimary" />
-            <H2 fos="$6" fow="600" col="$brandPrimary">
-              Favorites
-            </H2>
+            <Text fos="$lg" fow="600" col="$brandPrimary">
+              Favourites
+            </Text>
           </XStack>
-          <Paragraph size="$2" col="$brandPrimary" mt="$1" fow={400}>
-            {favorites.length} {favorites.length === 1 ? "word" : "words"} saved
-          </Paragraph>
         </YStack>
-        <Button
-          icon={ArrowLeft}
-          size={45}
-          onPress={() => router.push("/(user)/(tabs)/words")}
-        />
+        <XStack f={1}></XStack>
       </XStack>
 
-      <YStack w="100%" ai="center">
-        {/* Scrollable Content Container */}
-        <FlatList
-          style={{ width: "100%" }}
-          data={favorites}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={{ padding: 16, flexGrow: 1 }}
-          ListEmptyComponent={renderEmptyState}
-          showsVerticalScrollIndicator={false}
-        />
-
-        {hasNextPage && (
-          <XStack ai="center">
-            {isLoadingMore ? (
-              <CircleSpinner />
-            ) : (
-              <Anchor
-                fos={15}
-                fow={500}
-                col="$brandPrimary"
-                py={5}
-                onPress={onLoadMore}
-              >
-                Load more
-              </Anchor>
-            )}
-          </XStack>
-        )}
-      </YStack>
+      {/* Scrollable Content Container */}
+      <FlatList
+        style={{ width: "100%" }}
+        data={favorites}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        contentContainerStyle={{
+          padding: 16,
+          flexGrow: 1,
+        }}
+        ListFooterComponent={() =>
+          hasNextPage && (
+            <XStack f={1} jc="center" p={10}>
+              {isLoadingMore ? (
+                <CircleSpinner />
+              ) : (
+                <Anchor
+                  fos={15}
+                  fow={500}
+                  col="$brandPrimary"
+                  py={5}
+                  onPress={onLoadMore}
+                >
+                  Load more
+                </Anchor>
+              )}
+            </XStack>
+          )
+        }
+        ListEmptyComponent={renderEmptyState}
+        showsVerticalScrollIndicator={false}
+      />
     </YStack>
   );
 }

@@ -24,6 +24,7 @@ export interface UserCreatePayload {
   password: string;
   firstName: string;
   lastName: string;
+  dailyTarget?: number;
 }
 
 export type UserUpdatePayload = Partial<UserCreatePayload>;

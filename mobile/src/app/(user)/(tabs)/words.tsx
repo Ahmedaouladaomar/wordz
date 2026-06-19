@@ -3,6 +3,7 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { WordCard } from "@/components/word-card";
 import { WordDetails } from "@/components/word-details";
+import { WordsList } from "@/components/words-list";
 import { Colors } from "@/constants/theme";
 import { useAuth } from "@/providers/AuthProvider";
 import { vocabularyService } from "@/services/vocabularyService";
@@ -13,6 +14,7 @@ import {
   ScrollView,
   StyleSheet,
   TextInput,
+  TouchableOpacity,
   useColorScheme,
 } from "react-native";
 import { toast } from "react-native-sonner";
@@ -30,32 +32,34 @@ export default function WordsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedWord, setSelectedWord] = useState<Vocabulary | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [showWordDetails, setShowWordDetails] = useState(false);
+  const [showWordsList, setShowWordsList] = useState(false);
   const [addWordModalVisible, setAddWordModalVisible] = useState(false);
 
-  useEffect(() => {
-    const fetchLatest = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+  const getVocabularies = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-        const response = await vocabularyService.getVocabularies({
-          orderBy: "createdAt",
-          sortOrder: "DESC",
-          take: DEFAULT_TAKE,
-        });
-        if (response.success && response.data) {
-          setWords(response.data.items);
-        } else {
-          setError(response.message || "Failed to fetch words");
-        }
-      } catch {
-        setError("An error occurred while fetching words");
-      } finally {
-        setIsLoading(false);
+      const response = await vocabularyService.getVocabularies({
+        orderBy: "createdAt",
+        sortOrder: "DESC",
+        take: DEFAULT_TAKE,
+      });
+      if (response.success && response.data) {
+        setWords(response.data.items);
+      } else {
+        setError(response.message || "Failed to fetch words");
       }
-    };
-    fetchLatest();
+    } catch {
+      setError("An error occurred while fetching words");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getVocabularies();
   }, []);
 
   const filteredWords = words?.filter(
@@ -71,7 +75,7 @@ export default function WordsScreen() {
 
   const handleWordPress = (word: Vocabulary) => {
     setSelectedWord(word);
-    setModalVisible(true);
+    setShowWordDetails(true);
   };
 
   const handlePlaySound = () => {
@@ -150,18 +154,6 @@ export default function WordsScreen() {
           </ThemedText>
         </ThemedView>
 
-        {/* Recently Added Words Header */}
-        <ThemedText
-          style={[
-            styles.sectionTitle,
-            {
-              color: textColor,
-            },
-          ]}
-        >
-          Recently Added
-        </ThemedText>
-
         {/* Words List */}
         {isLoading ? (
           <ThemedView
@@ -185,15 +177,7 @@ export default function WordsScreen() {
             </ThemedText>
           </ThemedView>
         ) : error ? (
-          <ThemedView
-            style={[
-              styles.emptyState,
-              {
-                backgroundColor: isDark ? "#1a1a1a" : brandPrimaryLight,
-                borderColor: "#ff6b6b",
-              },
-            ]}
-          >
+          <ThemedView style={[styles.emptyState]}>
             <ThemedText
               style={[
                 styles.emptyStateText,
@@ -216,35 +200,39 @@ export default function WordsScreen() {
             </ThemedText>
           </ThemedView>
         ) : filteredWords.length > 0 ? (
-          <ThemedView style={styles.wordsList}>
-            {filteredWords.map((word) => (
-              <WordCard
-                key={word.id}
-                id={word.id}
-                title={word.term}
-                description={word.definition}
-                addedAt={new Date(word.createdAt)}
-                status="new"
-                onPress={() => handleWordPress(word)}
-                onPronounce={() => {
-                  console.log(`Pronounce: ${word.term}`);
-                }}
-                onPractice={() => {
-                  console.log(`Practice: ${word.term}`);
-                }}
-              />
-            ))}
-          </ThemedView>
+          <>
+            <XStack jc="space-between" px="$2" mt="$2" mb="$5">
+              <Text col="#003439" fos="$lg" fow="600">
+                Recently Added
+              </Text>
+              <TouchableOpacity onPress={() => setShowWordsList(true)}>
+                <Text col="$brandPrimary" fos={16} fow="500">
+                  View All
+                </Text>
+              </TouchableOpacity>
+            </XStack>
+            <ThemedView style={styles.wordsList}>
+              {filteredWords.map((word) => (
+                <WordCard
+                  key={word.id}
+                  id={word.id}
+                  title={word.term}
+                  description={word.definition}
+                  addedAt={new Date(word.createdAt)}
+                  status="new"
+                  onPress={() => handleWordPress(word)}
+                  onPronounce={() => {
+                    console.log(`Pronounce: ${word.term}`);
+                  }}
+                  onPractice={() => {
+                    console.log(`Practice: ${word.term}`);
+                  }}
+                />
+              ))}
+            </ThemedView>
+          </>
         ) : (
-          <ThemedView
-            style={[
-              styles.emptyState,
-              {
-                backgroundColor: isDark ? "#1a1a1a" : brandPrimaryLight,
-                borderColor: brandPrimary,
-              },
-            ]}
-          >
+          <ThemedView style={styles.emptyState}>
             <ThemedText
               style={[
                 styles.emptyStateText,
@@ -291,10 +279,18 @@ export default function WordsScreen() {
       {/* Word Details Modal */}
       {selectedWord && (
         <WordDetails
-          visible={modalVisible}
+          visible={showWordDetails}
           word={selectedWord}
-          onClose={() => setModalVisible(false)}
+          onClose={() => setShowWordDetails(false)}
           onPlaySound={handlePlaySound}
+        />
+      )}
+
+      {/* Words List Modal */}
+      {showWordsList && (
+        <WordsList
+          visible={showWordsList}
+          onClose={() => setShowWordsList(false)}
         />
       )}
 
@@ -391,7 +387,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     minHeight: 200,
-    borderWidth: 1.5,
+    shadowColor: "gray",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   emptyStateText: {
     fontSize: 16,

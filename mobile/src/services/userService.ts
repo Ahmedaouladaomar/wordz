@@ -26,7 +26,7 @@ class UserService extends BaseApiService {
     userId: string,
     payload: UserUpdatePayload,
   ): Promise<ApiResponse<User>> {
-    return this.handleRequest<User>(`/${userId}`, "put", payload);
+    return this.handleRequest<User>(`/${userId}`, "patch", payload);
   }
 
   /**

@@ -11,7 +11,7 @@ interface WordCardProps {
   title: string;
   description: string;
   addedAt: Date;
-  status: "new" | "mastered" | "favourite";
+  status: "new" | "mastered" | "favourite" | null;
   onPronounce?: () => void;
   onPractice?: () => void;
   onPress?: () => void;
@@ -32,6 +32,7 @@ export function WordCard({
   const brandPrimary = theme.brandPrimary?.get();
 
   const getStatusBadge = () => {
+    if (!status) return;
     if (status === "favourite") {
       return <Heart size={20} col={brandPrimary} fill={brandPrimary} />;
     }
@@ -92,9 +93,7 @@ export function WordCard({
           {description}
         </ThemedText>
 
-        {(status === "new" ||
-          status === "mastered" ||
-          status === "favourite") && (
+        {status && (
           <XStack style={styles.footer}>
             {onPractice && (
               <>

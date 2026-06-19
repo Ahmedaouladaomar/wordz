@@ -35,8 +35,6 @@ export class VocabularyService {
     paginationQuery: PaginationQueryDto,
     vocabularyFilterDto?: VocabularyFilterDto,
   ): Promise<PageDto<Vocabulary>> {
-    console.log('paginationQuery =>', paginationQuery);
-    console.log('vocabularyFilterDto =>', vocabularyFilterDto);
     const {
       page = 1,
       take = 10,

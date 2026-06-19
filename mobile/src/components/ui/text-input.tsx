@@ -17,7 +17,7 @@ const StyledInput = styled(Input, {
   h: 60,
   px: "$5",
   fos: "$md",
-  flex: 1,
+  f: 1,
 });
 
 export const TextInput = forwardRef<TamaguiElement, any>(
@@ -33,7 +33,7 @@ export const TextInput = forwardRef<TamaguiElement, any>(
           fos="$3"
           fow="700"
           ls={2}
-          color="$brandPrimary"
+          col="$brandPrimary"
           tt="uppercase"
           pl="$1"
         >
@@ -47,7 +47,7 @@ export const TextInput = forwardRef<TamaguiElement, any>(
             placeholderTextColor="#4786"
             {...props}
             secureTextEntry={isSecure}
-            ref={ref}
+            ref={ref as any}
             pr={isPassword ? "$10" : "$5"}
           />
 
@@ -55,12 +55,12 @@ export const TextInput = forwardRef<TamaguiElement, any>(
             <Button
               color="rgba(68, 119, 136, 0.57)"
               bg="transparent"
-              position="absolute"
-              top={0}
-              right={0}
-              borderWidth={0}
-              height={60}
-              pressStyle={{ bg: "transparent", opacity: 0.5 }}
+              pos="absolute"
+              t={0}
+              r={0}
+              bw={0}
+              h={60}
+              pressStyle={{ bg: "transparent", o: 0.5 }}
               onPress={() => setShowPassword(!showPassword)}
               icon={showPassword ? <EyeOff size="$1" /> : <Eye size="$1" />}
             />
