@@ -1,37 +1,51 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-    practiceQueryKeys,
-    practiceService,
-} from "../services/practiceService";
+import { delay } from "@/api/client";
+import { vocabularyQueryKeys } from "@/services/vocabularyService";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { practiceService } from "../services/practiceService";
 
 /**
- * Hook to fetch unmastered vocabulary terms for practice
+ * Hook to update total words of existing practice entry
  */
-export function useUnmasteredTerms() {
-  return useQuery({
-    queryKey: practiceQueryKeys.unmasteredTerms(),
-    queryFn: () => practiceService.getUnmasteredTerms(),
-    enabled: true,
-  });
-}
+export function useUpdatePracticeTotalWords(delayMs: number = 1000) {
+  const queryClient = useQueryClient();
 
-/**
- * Hook to fetch or create today's practice session
- */
-export function useTodayPractice() {
-  return useQuery({
-    queryKey: practiceQueryKeys.today(),
-    queryFn: () => practiceService.getTodayPractice(),
-    enabled: true,
-  });
-}
-
-/**
- * Hook to complete a practice session
- */
-export function useCompletePractice() {
   return useMutation({
-    mutationFn: (practiceId: string) =>
-      practiceService.completePractice(practiceId),
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: { totalWords: number; vocabularyId: string };
+    }) => {
+      return Promise.all([
+        delay(delayMs),
+        practiceService.updateTotalWords(id, payload),
+      ]);
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: vocabularyQueryKeys.unmasteredList(),
+      });
+    },
+  });
+}
+
+/**
+ * Hook to delete practice
+ */
+export function useDeletePractice(delayMs: number = 1000) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => {
+      return Promise.all([delay(delayMs), practiceService.deletePractice(id)]);
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: vocabularyQueryKeys.unmasteredList(),
+      });
+    },
   });
 }

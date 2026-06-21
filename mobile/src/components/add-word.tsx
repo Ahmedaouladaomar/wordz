@@ -1,6 +1,6 @@
 import { ThemedView } from "@/components/themed-view";
 import { TextInput } from "@/components/ui/text-input";
-import { vocabularyService } from "@/services/vocabularyService";
+import { useAddVocabulary } from "@/hooks/vocabulary-hooks";
 import { X } from "@tamagui/lucide-icons";
 import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -37,6 +37,8 @@ export function AddWord({ visible, onClose, onSuccess }: Props) {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  const { mutate: createVocabulary } = useAddVocabulary();
+
   const {
     control,
     handleSubmit,
@@ -50,22 +52,27 @@ export function AddWord({ visible, onClose, onSuccess }: Props) {
     },
   });
 
-  const onSubmit = async (data: FormInputs) => {
+  const onSubmit = async (payload: FormInputs) => {
     setIsLoading(true);
     try {
-      const response = await vocabularyService.createVocabulary({
-        term: data.word.trim(),
-        definition: data.definition.trim(),
-        example: data.example.trim(),
-      });
-
-      if (response.success) {
-        reset();
-        onSuccess?.();
-        onClose();
-      } else {
-        console.error(response.message);
-      }
+      createVocabulary(
+        {
+          term: payload.word.trim(),
+          definition: payload.definition.trim(),
+          example: payload.example.trim(),
+        },
+        {
+          onSuccess: (response) => {
+            if (response.success) {
+              reset();
+              onSuccess?.();
+              onClose();
+            } else {
+              console.error(response.message);
+            }
+          },
+        },
+      );
     } catch (err) {
       console.error(err);
     } finally {

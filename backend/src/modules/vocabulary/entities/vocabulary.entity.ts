@@ -1,7 +1,7 @@
 import { BaseEntity } from '@/common/entities/base.entity';
 import { Practice } from '@/modules/practice/entities/practice.entity';
 import { User } from '@/modules/user/entities/user.entity';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne } from 'typeorm';
 
 @Entity('vocabularies')
 export class Vocabulary extends BaseEntity {
@@ -30,7 +30,6 @@ export class Vocabulary extends BaseEntity {
   @JoinColumn({ name: 'userId' })
   user!: User;
 
-  @ManyToOne(() => Practice, (practice) => practice.vocabularies, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'practiceId' })
-  practice?: Practice;
+  @ManyToMany(() => Practice, (practice) => practice.vocabularies)
+  practices?: Practice[];
 }

@@ -4,11 +4,11 @@ import { Vocabulary } from "@/types/vocabulary";
 import { X } from "@tamagui/lucide-icons";
 import React, { useEffect, useState } from "react";
 import {
-    FlatList,
-    Modal,
-    Pressable,
-    StyleSheet,
-    TouchableOpacity,
+  FlatList,
+  Modal,
+  Pressable,
+  StyleSheet,
+  TouchableOpacity,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "react-native-sonner";

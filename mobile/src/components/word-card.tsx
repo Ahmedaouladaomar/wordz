@@ -1,10 +1,9 @@
 import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
 import { formatTimeAgo } from "@/helpers/date.helper";
 import { FileQuestion, Heart, Volume2 } from "@tamagui/lucide-icons";
 import React from "react";
 import { StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
-import { useTheme, XStack } from "tamagui";
+import { Text, useTheme, View, XStack } from "tamagui";
 
 interface WordCardProps {
   id: string;
@@ -37,7 +36,7 @@ export function WordCard({
       return <Heart size={20} col={brandPrimary} fill={brandPrimary} />;
     }
     return (
-      <ThemedText
+      <Text
         style={[
           styles.statusBadge,
           {
@@ -51,13 +50,13 @@ export function WordCard({
         ]}
       >
         {status === "new" ? "new" : "mastered"}
-      </ThemedText>
+      </Text>
     );
   };
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
-      <ThemedView
+      <View
         style={[
           styles.card,
           {
@@ -93,59 +92,57 @@ export function WordCard({
           {description}
         </ThemedText>
 
-        {status && (
-          <XStack style={styles.footer}>
-            {onPractice && (
-              <>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={status === "mastered" ? onPronounce : onPractice}
-                >
-                  <XStack style={styles.actionContent}>
-                    {status === "mastered" ? (
-                      <Volume2 size={16} col={brandPrimary} />
-                    ) : (
-                      <FileQuestion size={16} col={brandPrimary} />
-                    )}
-                    <ThemedText
-                      style={[
-                        styles.actionText,
-                        {
-                          color: brandPrimary,
-                        },
-                      ]}
-                    >
-                      {status === "mastered" ? "Pronounce" : "Practice"}
-                    </ThemedText>
-                  </XStack>
-                </TouchableOpacity>
+        <XStack style={styles.footer}>
+          {status && onPractice && (
+            <>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={status === "mastered" ? onPronounce : onPractice}
+              >
+                <XStack style={styles.actionContent}>
+                  {status === "mastered" ? (
+                    <Volume2 size={16} col={brandPrimary} />
+                  ) : (
+                    <FileQuestion size={16} col={brandPrimary} />
+                  )}
+                  <ThemedText
+                    style={[
+                      styles.actionText,
+                      {
+                        color: brandPrimary,
+                      },
+                    ]}
+                  >
+                    {status === "mastered" ? "Pronounce" : "Practice"}
+                  </ThemedText>
+                </XStack>
+              </TouchableOpacity>
 
-                <ThemedText
-                  style={[
-                    styles.separator,
-                    {
-                      color: isDark ? "#444" : "#ccc",
-                    },
-                  ]}
-                >
-                  •
-                </ThemedText>
-              </>
-            )}
+              <ThemedText
+                style={[
+                  styles.separator,
+                  {
+                    color: isDark ? "#444" : "#ccc",
+                  },
+                ]}
+              >
+                •
+              </ThemedText>
+            </>
+          )}
 
-            <ThemedText
-              style={[
-                styles.timeText,
-                {
-                  color: isDark ? "#888" : "#999",
-                },
-              ]}
-            >
-              Added {formatTimeAgo(addedAt)} ago
-            </ThemedText>
-          </XStack>
-        )}
-      </ThemedView>
+          <ThemedText
+            style={[
+              styles.timeText,
+              {
+                color: isDark ? "#888" : "#999",
+              },
+            ]}
+          >
+            Added {formatTimeAgo(addedAt)} ago
+          </ThemedText>
+        </XStack>
+      </View>
     </TouchableOpacity>
   );
 }

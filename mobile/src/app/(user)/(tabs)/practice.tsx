@@ -1,40 +1,48 @@
-import { delay } from "@/api/client";
 import { CircleSpinner } from "@/components/ui/circle-spinner";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  useDeletePractice,
+  useUpdatePracticeTotalWords,
+} from "@/hooks/practice-hooks";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useFlipAnimation } from "@/hooks/useFlipAnimation";
+import { useUnmasteredTerms } from "@/hooks/vocabulary-hooks";
 import { practiceService } from "@/services/practiceService";
 import { useAuthStore } from "@/store/auth-store";
 import { Practice } from "@/types/practice";
 import { Vocabulary } from "@/types/vocabulary";
 import { BookOpen, PartyPopper, RotateCcw } from "@tamagui/lucide-icons";
 import { FlipHorizontal2 } from "lucide-react-native";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Animated, StyleSheet } from "react-native";
 import { Pressable, ScrollView } from "react-native-gesture-handler";
+import { toast } from "react-native-sonner";
 import { Button, Separator, Text, View, XStack, YStack } from "tamagui";
 
 export default function PracticeScreen() {
-  const [isFlipped, setIsFlipped] = useState(false);
-  const flipAnimation = useRef(new Animated.Value(0)).current;
-
-  const [loadingState, setLoadingState] = useState({
-    loadingGotIt: false,
-    loadingStillLearning: false,
-  });
-
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const user = useAuthStore((state) => state.user);
 
   const [practice, setPractice] = useState<Practice | undefined>(undefined);
-  const [words, setWords] = useState<Vocabulary[]>([]);
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
 
-  const getUnmastered = async () => {
-    const res = await practiceService.getUnmasteredTerms();
-    if (res.success) {
-      setWords(res.data?.items || []);
-    }
-  };
+  const { flipToFrontStyle, flipToBackStyle, flipCard, resetCard } =
+    useFlipAnimation();
+
+  const { mutate: updateTotalWords, isPending: isLoadingGotIt } =
+    useUpdatePracticeTotalWords();
+
+  const { mutate: deletePractice, isPending: isLoadingStillLearning } =
+    useDeletePractice();
+
+  const {
+    data,
+    refetch,
+    isFetching: isFetchingTerms,
+  } = useUnmasteredTerms({ page: 1, take: 10 });
+  const words: Vocabulary[] = data?.data?.items || [];
+
+  const currentWord = words?.[0];
 
   const getPractice = async () => {
     const res = await practiceService.todayPractice();
@@ -47,91 +55,47 @@ export default function PracticeScreen() {
     getPractice();
   }, []);
 
-  useEffect(() => {
-    getUnmastered();
-  }, []);
-
-  const frontInterpolate = flipAnimation.interpolate({
-    inputRange: [0, 180],
-    outputRange: ["0deg", "180deg"],
-  });
-
-  const flipToFrontStyle = {
-    transform: [{ rotateY: frontInterpolate }],
-  };
-
-  const backInterpolate = flipAnimation.interpolate({
-    inputRange: [0, 180],
-    outputRange: ["180deg", "360deg"],
-  });
-
-  const flipToBackStyle = {
-    transform: [{ rotateY: backInterpolate }],
-  };
-
-  const flipCard = () => {
-    if (isFlipped) {
-      Animated.spring(flipAnimation, {
-        toValue: 0,
-        friction: 8,
-        tension: 10,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      Animated.spring(flipAnimation, {
-        toValue: 180,
-        friction: 8,
-        tension: 10,
-        useNativeDriver: true,
-      }).start();
-    }
-    setIsFlipped(!isFlipped);
-  };
-
-  const handleGotIt = async () => {
+  const handleGotIt = () => {
     try {
-      setLoadingState((prev) => ({ ...prev, loadingGotIt: true }));
       const totalWords = (practice?.totalWords || 0) + 1;
-      await practiceService.updateTotalWords(practice!.id, {
-        totalWords,
-        vocabularyId: words[currentIndex].id,
-      });
-
-      // delay for animation purposes
-      await delay(1000);
-
-      const isCompleted = totalWords === user?.dailyTarget;
-
-      // update local state immediately for better UX
-      setPractice((prev) =>
-        prev ? { ...prev, totalWords, isCompleted } : undefined,
+      updateTotalWords(
+        {
+          id: practice!.id,
+          payload: {
+            totalWords,
+            vocabularyId: currentWord.id,
+          },
+        },
+        {
+          onSuccess: async () => {
+            const isCompleted = totalWords === user?.dailyTarget;
+            // update local state immediately for better UX
+            setPractice((prev) =>
+              prev ? { ...prev, totalWords, isCompleted } : undefined,
+            );
+          },
+        },
       );
-
-      setCurrentIndex((prev) => prev + 1);
-    } catch {
-    } finally {
-      setLoadingState((prev) => ({ ...prev, loadingGotIt: false }));
+    } catch (e) {
+      toast.error(JSON.stringify(e));
     }
   };
 
-  const handleStillLearning = async () => {
+  const handleStillLearning = () => {
     try {
-      setLoadingState((prev) => ({ ...prev, loadingStillLearning: true }));
       if (practice?.id) {
-        await practiceService.deletePractice(practice.id);
-        // delay for animation purposes
-        await delay(500);
-        // Refetch practice session
-        await getPractice();
-        // refetch new batch of unmastered terms
-        await getUnmastered();
-        // Reset word index
-        setCurrentIndex(0);
-        setIsFlipped(false);
+        deletePractice(practice?.id, {
+          onSuccess: async () => {
+            // Refetch practice session
+            await getPractice();
+            // refetch new batch of unmastered terms
+            await refetch();
+            resetCard();
+          },
+        });
       }
-    } catch {
-    } finally {
-      setLoadingState((prev) => ({ ...prev, loadingStillLearning: false }));
+    } catch (e) {
+      toast.error(JSON.stringify(e));
     }
   };
 
@@ -195,12 +159,12 @@ export default function PracticeScreen() {
                 </Text>
               </XStack>
               <Text fow="500" fos="$md" ta="center" w="70%" col="gray">
-                You've mastered all your words for today. Keep up the great
+                You&apos;ve mastered all your words for today. Keep up the great
                 work!
               </Text>
             </View>
             <Button bc="#abf3fd" mt={30} br="$10" onPress={handleStillLearning}>
-              {loadingState.loadingStillLearning ? (
+              {isLoadingStillLearning ? (
                 <CircleSpinner color="#006572" />
               ) : (
                 <>
@@ -212,6 +176,15 @@ export default function PracticeScreen() {
               )}
             </Button>
           </ScrollView>
+        ) : isFetchingTerms ? (
+          <YStack gap={30}>
+            <Skeleton.Pulse>
+              <Skeleton w="100%" h={350} br={40} />
+            </Skeleton.Pulse>
+            <Skeleton.Pulse>
+              <Skeleton w="100%" h={50} br={40} />
+            </Skeleton.Pulse>
+          </YStack>
         ) : words.length > 0 ? (
           <>
             <Pressable style={styles.cardContainer} onPress={flipCard}>
@@ -249,7 +222,7 @@ export default function PracticeScreen() {
                       fow="700"
                       fos="$lg"
                     >
-                      {words[currentIndex]?.term}
+                      {currentWord?.term}
                     </Text>
 
                     <XStack ai="center" gap={10}>
@@ -285,7 +258,7 @@ export default function PracticeScreen() {
                       fow="700"
                       fos="$lg"
                     >
-                      {words[currentIndex]?.definition}
+                      {currentWord?.definition}
                     </Text>
                     <Separator
                       style={{ borderColor: "#0065721e" }}
@@ -294,7 +267,7 @@ export default function PracticeScreen() {
                     />
 
                     <Text mt={20} mb={40} col="#29646A">
-                      {words[currentIndex]?.example}
+                      {currentWord?.example}
                     </Text>
 
                     <XStack ai="center" gap={10}>
@@ -306,11 +279,11 @@ export default function PracticeScreen() {
               </View>
             </Pressable>
             <Button
-              bc={loadingState.loadingGotIt ? "#006572a7" : "$brandPrimary"}
+              bc={isLoadingGotIt ? "#006572a7" : "$brandPrimary"}
               br="$10"
               onPress={handleGotIt}
             >
-              {loadingState.loadingGotIt ? (
+              {isLoadingGotIt ? (
                 <CircleSpinner color="white" />
               ) : (
                 <Text col="white" fos="$md" fow="600">

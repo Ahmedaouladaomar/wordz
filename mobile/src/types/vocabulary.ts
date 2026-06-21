@@ -1,3 +1,5 @@
+import { SortOrder } from "./api";
+
 export interface Vocabulary {
   id: string;
   term: string;
@@ -17,3 +19,19 @@ export interface CreateVocabularyPayload {
   isMastered?: boolean;
   isFavourite?: boolean;
 }
+
+export interface VocabularyPagination {
+  page?: number;
+  take?: number;
+  orderBy?: string;
+  sortOrder?: SortOrder;
+  search?: string;
+}
+
+export interface VocabularyFilters {
+  isFavourite?: boolean;
+  isMastered?: boolean;
+}
+
+export interface VocabularyQuery
+  extends VocabularyPagination, VocabularyFilters {}

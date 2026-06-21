@@ -3,3 +3,8 @@ export interface ApiResponse<T> {
   data?: T;
   message?: string;
 }
+
+export enum SortOrder {
+  ASC = "ASC",
+  DESC = "DESC",
+}

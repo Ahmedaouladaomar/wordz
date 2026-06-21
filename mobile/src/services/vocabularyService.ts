@@ -1,16 +1,37 @@
 import { ApiResponse } from "@/types/api";
-import { CreateVocabularyPayload, Vocabulary } from "@/types/vocabulary";
+import {
+  CreateVocabularyPayload,
+  Vocabulary,
+  VocabularyQuery
+} from "@/types/vocabulary";
 import { BaseApiService } from "./baseApiService";
 
 // Query keys
 export const vocabularyQueryKeys = {
   all: ["vocabulary"] as const,
-  list: () => [...vocabularyQueryKeys.all, "list"] as const,
+
+  // Base endpoints trackers (Prefixes)
+  lists: () => [...vocabularyQueryKeys.all, "list"] as const,
+  details: () => [...vocabularyQueryKeys.all, "detail"] as const,
+
+  // Specific list category trackers
+  favouritesList: () => [...vocabularyQueryKeys.lists(), "favorites"] as const,
+  masteredList: () => [...vocabularyQueryKeys.lists(), "mastered"] as const,
+  unmasteredList: () => [...vocabularyQueryKeys.lists(), "unmastered"] as const,
+
+  // Dynamic methods that accept parameters
+  list: (params: VocabularyQuery) =>
+    [...vocabularyQueryKeys.lists(), "all", params] as const,
+
+  favourites: (params: VocabularyQuery) =>
+    [...vocabularyQueryKeys.favouritesList(), params] as const,
+  mastered: (params: VocabularyQuery) =>
+    [...vocabularyQueryKeys.masteredList(), params] as const,
+  unmastered: (params: VocabularyQuery) =>
+    [...vocabularyQueryKeys.unmasteredList(), params] as const,
+
   detail: (vocabularyId: string) =>
-    [...vocabularyQueryKeys.all, "detail", vocabularyId] as const,
-  trending: () => [...vocabularyQueryKeys.all, "trending"] as const,
-  favorites: () => [...vocabularyQueryKeys.all, "favorites"] as const,
-  mastered: () => [...vocabularyQueryKeys.all, "mastered"] as const,
+    [...vocabularyQueryKeys.details(), vocabularyId] as const,
 };
 
 class VocabularyService extends BaseApiService {
@@ -29,7 +50,7 @@ class VocabularyService extends BaseApiService {
    * Get all vocabularies for the current user
    */
   async getVocabularies(
-    params = {},
+    params: VocabularyQuery = {},
   ): Promise<ApiResponse<{ items: Vocabulary[]; meta: any }>> {
     return this.handleRequest<{ items: Vocabulary[]; meta: any }>(
       "",
@@ -60,32 +81,6 @@ class VocabularyService extends BaseApiService {
    */
   async deleteVocabulary(vocabularyId: string): Promise<ApiResponse<void>> {
     return this.handleRequest<void>(`/${vocabularyId}`, "delete");
-  }
-
-  /**
-   * Get favourite vocabularies for the current user
-   */
-  async getFavorites(
-    params = {},
-  ): Promise<ApiResponse<{ items: Vocabulary[]; meta: any }>> {
-    return this.handleRequest<{ items: Vocabulary[]; meta: any }>(
-      "/favorites",
-      "get",
-      params,
-    );
-  }
-
-  /**
-   * Get mastered vocabularies for the current user
-   */
-  async getMastered(
-    params = {},
-  ): Promise<ApiResponse<{ items: Vocabulary[]; meta: any }>> {
-    return this.handleRequest<{ items: Vocabulary[]; meta: any }>(
-      "/mastered",
-      "get",
-      params,
-    );
   }
 
   /**

@@ -126,33 +126,44 @@ export class PracticeService {
 
   async updateTotalWords(
     id: string,
-    updateTotalWordsDto: {
-      totalWords: number;
-      vocabularyId: string;
-    },
+    updateTotalWordsDto: { totalWords: number; vocabularyId: string },
   ) {
-    const practice = await this.findOne(id);
-    if (!practice) throw new NotFoundException('Practice or not found!');
+    return await this.dataSource.transaction(async (entityManager) => {
+      const practice = await entityManager.findOne(Practice, {
+        where: { id },
+        relations: { user: true, vocabularies: true },
+      });
+      if (!practice) throw new NotFoundException('Practice not found!');
 
-    const vocabulary = await this.vocabularyService.findOne(updateTotalWordsDto.vocabularyId);
-    if (!vocabulary) throw new NotFoundException('Vocabulary or not found!');
+      const vocabulary = await entityManager.findOne(Vocabulary, {
+        where: { id: updateTotalWordsDto.vocabularyId },
+      });
+      if (!vocabulary) throw new NotFoundException('Vocabulary not found!');
 
-    if (practice.isCompleted)
-      throw new BadRequestException('Cannot update a compeleted practice session!');
+      if (practice.isCompleted)
+        throw new BadRequestException('Cannot update a completed practice session!');
 
-    if (updateTotalWordsDto.totalWords > practice.user.dailyTarget)
-      throw new BadRequestException('Cannot exceed daily target!');
+      if (updateTotalWordsDto.totalWords > practice.user.dailyTarget)
+        throw new BadRequestException('Cannot exceed daily target!');
 
-    practice.totalWords = updateTotalWordsDto.totalWords;
-    if (updateTotalWordsDto.totalWords === practice.user.dailyTarget) {
-      practice.isCompleted = true;
-    }
-    vocabulary.practice = practice;
-    vocabulary.isMastered = true;
+      practice.totalWords = updateTotalWordsDto.totalWords;
+      if (updateTotalWordsDto.totalWords === practice.user.dailyTarget) {
+        practice.isCompleted = true;
+      }
 
-    await this.vocabularyService.save(vocabulary);
+      if (!practice.vocabularies) practice.vocabularies = [];
+      const alreadyLinked = practice.vocabularies.some((v) => v.id === vocabulary.id);
 
-    return await this.save(practice);
+      if (!alreadyLinked) {
+        practice.vocabularies.push(vocabulary);
+        vocabulary.practiceId = practice.id;
+      }
+
+      vocabulary.isMastered = true;
+
+      await entityManager.save(Vocabulary, vocabulary);
+      return await entityManager.save(Practice, practice);
+    });
   }
 
   async findAll(): Promise<Practice[]> {
@@ -167,6 +178,7 @@ export class PracticeService {
       where: { id },
       relations: {
         user: true,
+        vocabularies: true,
       },
     });
     if (!practice) {
@@ -195,18 +207,30 @@ export class PracticeService {
     return await this.dataSource.transaction(async (entityManager) => {
       const practice = await entityManager.findOne(Practice, {
         where: { id: sessionId },
-        relations: ['vocabularies'],
+        relations: { vocabularies: true },
       });
 
-      const masteredWords = practice?.vocabularies?.filter((w) => w.isMastered === true) || [];
+      if (!practice) {
+        throw new NotFoundException('Practice session not found!');
+      }
+
+      const masteredWords = practice.vocabularies?.filter((w) => w.isMastered === true) || [];
 
       if (masteredWords.length > 0) {
         const vocabulariesIds = masteredWords.map((w) => w.id);
 
-        await entityManager.update(Vocabulary, { id: In(vocabulariesIds) }, { isMastered: false });
+        await entityManager.update(
+          Vocabulary,
+          { id: In(vocabulariesIds) },
+          {
+            isMastered: false,
+            practiceId: undefined,
+          },
+        );
       }
 
-      await entityManager.remove(Practice, practice);
+      await entityManager.delete(Practice, { id: sessionId });
+
       return { success: true };
     });
   }

@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, JoinColumn, OneToMany, Unique } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Unique, ManyToMany, JoinTable } from 'typeorm';
 import { BaseEntity } from '@/common/entities/base.entity';
 import { User } from '@/modules/user/entities/user.entity';
 import { Vocabulary } from '@/modules/vocabulary/entities/vocabulary.entity';
@@ -19,7 +19,8 @@ export class Practice extends BaseEntity {
   @JoinColumn({ name: 'userId' })
   user!: User;
 
-  @OneToMany(() => Vocabulary, (vocabulary) => vocabulary.practice, { onDelete: 'CASCADE' })
+  @ManyToMany(() => Vocabulary, (vocabulary) => vocabulary.practices)
+  @JoinTable()
   vocabularies?: Vocabulary[];
 
   @Column()
