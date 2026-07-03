@@ -1,6 +1,6 @@
 import { ThemedView } from "@/components/themed-view";
 import { TextInput } from "@/components/ui/text-input";
-import { vocabularyService } from "@/services/vocabularyService";
+import { useAddVocabulary } from "@/hooks/vocabulary-hooks";
 import { Plus } from "@tamagui/lucide-icons";
 import { CheckCircle2 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
@@ -9,47 +9,42 @@ import { toast } from "react-native-sonner";
 import { Button, Text, XStack, YStack } from "tamagui";
 
 export default function AddScreen() {
-  const [word, setWord] = useState("");
+  const [term, setTerm] = useState("");
   const [definition, setDefinition] = useState("");
   const [example, setExample] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [trendingWords, setTrendingWords] = useState<
     { id: string; word: string; count: number }[]
   >([]);
 
-  // Fetch trending vocabularies
+  const { mutate: createVocabulary, isPending: isLoading } = useAddVocabulary();
+
   useEffect(() => {
-    const fetchTrendingWords = async () => {};
-    fetchTrendingWords();
+    setTrendingWords([]);
   }, []);
 
   const handleAddWord = async () => {
-    if (!word.trim() || !definition.trim() || !example.trim()) {
+    if (!term.trim() || !definition.trim() || !example.trim()) {
       toast.error("Please fill in all fields");
       return;
     }
-
-    setIsLoading(true);
-    try {
-      const response = await vocabularyService.createvocabulary({
-        term: word,
-        definition: definition,
-        example: example,
-      });
-
-      if (response.success) {
-        setWord("");
-        setDefinition("");
-        setExample("");
-        toast.success("Word added successfully!");
-      } else {
-        toast.error(response.message || "Failed to add word");
-      }
-    } catch {
-      toast.error("An error occurred while adding the word");
-    } finally {
-      setIsLoading(false);
-    }
+    createVocabulary(
+      { term, definition, example },
+      {
+        onSuccess: (response) => {
+          if (response.success) {
+            setTerm("");
+            setDefinition("");
+            setExample("");
+            toast.success("Word added successfully!");
+          } else {
+            console.error(response.message);
+          }
+        },
+        onError: () => {
+          toast.error("An error occurred while adding the word");
+        },
+      },
+    );
   };
 
   return (
@@ -72,8 +67,8 @@ export default function AddScreen() {
           <TextInput
             label="Word"
             placeholder="e.g. Ephemeral"
-            value={word}
-            onChangeText={setWord}
+            value={term}
+            onChangeText={setTerm}
           />
         </ThemedView>
 
@@ -101,7 +96,7 @@ export default function AddScreen() {
 
         <Button
           style={styles.saveButton}
-          h={55}
+          h={50}
           br={30}
           bc="$brandPrimary"
           onPress={handleAddWord}
@@ -167,7 +162,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     fontWeight: 500,
-    padding: 15,
+    padding: 10,
     marginTop: 25,
     display: "flex",
     alignItems: "center",

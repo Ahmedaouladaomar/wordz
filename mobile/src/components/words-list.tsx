@@ -1,5 +1,6 @@
 import { delay } from "@/api/client";
 import { vocabularyService } from "@/services/vocabularyService";
+import { SortOrder } from "@/types/api";
 import { Vocabulary } from "@/types/vocabulary";
 import { X } from "@tamagui/lucide-icons";
 import React, { useEffect, useState } from "react";
@@ -45,7 +46,7 @@ export function WordsList({ visible, onClose }: Props) {
       const response = await vocabularyService.getVocabularies({
         page,
         orderBy: "createdAt",
-        sortOrder: "DESC",
+        sortOrder: SortOrder.DESC,
         take: 5,
       });
 

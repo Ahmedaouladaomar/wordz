@@ -42,11 +42,6 @@ export class PracticeController {
     return this.practiceService.getUnmasteredTerms(user.id, paginationQueryDto);
   }
 
-  @Post(':id/complete')
-  completePractice(@Param('id') id: string) {
-    return this.practiceService.completePractice(id);
-  }
-
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.practiceService.findOne(id);

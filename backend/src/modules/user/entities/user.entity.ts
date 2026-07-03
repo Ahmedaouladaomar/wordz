@@ -75,6 +75,11 @@ export class User extends BaseEntity {
     return this.vocabularies?.filter((v) => v.isMastered)?.length || 0;
   }
 
+  @Expose()
+  get totalPracticeSssions() {
+    return this.practices?.filter((p) => p.isCompleted)?.length || 0;
+  }
+
   @OneToMany(() => RefreshToken, (rt) => rt.user, { onDelete: 'CASCADE' })
   refreshTokens?: RefreshToken[];
 

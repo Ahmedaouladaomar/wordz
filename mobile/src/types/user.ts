@@ -9,6 +9,7 @@ export interface User {
   dailyTarget: number;
   level?: UserLevel;
   totalWords?: number;
+  totalPracticeSssions?: number;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -36,7 +36,7 @@ export default function SideMenu({ onSelectItem, onLogout, ...styles }: Props) {
             <Avatar circular size="$5" backgroundColor="$brandPrimary">
               <Avatar.Image source={{ uri: user?.avatarUrl }} />
               <Avatar.Fallback jc="center" ai="center">
-                <User size={25} col="white" />
+                <User size="$2" col="white" />
               </Avatar.Fallback>
             </Avatar>
             <YStack f={1}>

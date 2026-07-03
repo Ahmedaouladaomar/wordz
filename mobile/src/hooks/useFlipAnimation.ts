@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Animated } from "react-native";
 
 /**
@@ -9,23 +9,29 @@ export const useFlipAnimation = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const flipAnimation = useRef(new Animated.Value(0)).current;
 
-  const frontInterpolate = flipAnimation.interpolate({
-    inputRange: [0, 180],
-    outputRange: ["0deg", "180deg"],
-  });
+  const flipToFrontStyle = useMemo(() => {
+    const frontInterpolate = flipAnimation.interpolate({
+      inputRange: [0, 180],
+      outputRange: ["0deg", "180deg"],
+    });
 
-  const flipToFrontStyle = {
-    transform: [{ rotateY: frontInterpolate }],
-  };
+    return {
+      transform: [{ rotateY: frontInterpolate }],
+      backfaceVisibility: "hidden" as const,
+    };
+  }, [flipAnimation]);
 
-  const backInterpolate = flipAnimation.interpolate({
-    inputRange: [0, 180],
-    outputRange: ["180deg", "360deg"],
-  });
+  const flipToBackStyle = useMemo(() => {
+    const backInterpolate = flipAnimation.interpolate({
+      inputRange: [0, 180],
+      outputRange: ["180deg", "360deg"],
+    });
 
-  const flipToBackStyle = {
-    transform: [{ rotateY: backInterpolate }],
-  };
+    return {
+      transform: [{ rotateY: backInterpolate }],
+      backfaceVisibility: "hidden" as const,
+    };
+  }, [flipAnimation]);
 
   const flipCard = () => {
     if (isFlipped) {

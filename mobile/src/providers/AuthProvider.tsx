@@ -293,6 +293,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  if (isInitLoading) {
+    return <ScreenLoader />;
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -309,7 +313,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         resetPasswordWithCode,
       }}
     >
-      {isInitLoading ? <ScreenLoader /> : children}
+      {children}
     </AuthContext.Provider>
   );
 }

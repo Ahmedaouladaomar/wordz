@@ -9,6 +9,7 @@ import { UpdatePracticeDto } from './dto/update-practice.dto';
 import { Practice } from './entities/practice.entity';
 import { PaginationQueryDto } from '@/common/dto/pagination-query.dto';
 import { Vocabulary } from '../vocabulary/entities/vocabulary.entity';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class PracticeService {
@@ -79,16 +80,13 @@ export class PracticeService {
     });
   }
 
-  async completePractice(practiceId: string) {
-    const practice = await this.findOne(practiceId);
-
-    if (!practice) {
-      throw new NotFoundException('Practice not found!');
-    }
-
-    const practiceUser = practice?.user;
-
-    if (!practiceUser) {
+  /**
+   *  Helper function to return next streak value for user
+   * @param user
+   * @returns
+   */
+  getUserNextStreak(user: User) {
+    if (!user) {
       throw new NotFoundException('No user associated with this practice session!');
     }
 
@@ -97,8 +95,8 @@ export class PracticeService {
     yesterday.setDate(yesterday.getDate() - 1);
 
     // We check the last time we incremented user's streak
-    const lastStreakIncrementDate = practiceUser?.lastStreakIncrementDate
-      ? new Date(practiceUser?.lastStreakIncrementDate)
+    const lastStreakIncrementDate = user?.lastStreakIncrementDate
+      ? new Date(user?.lastStreakIncrementDate)
       : null;
 
     const isTodayStreakIncrementDay = lastStreakIncrementDate
@@ -108,20 +106,19 @@ export class PracticeService {
       ? isSameDate(yesterday, lastStreakIncrementDate)
       : false;
 
-    if (practice.totalWords >= practiceUser.dailyTarget) {
-      // If user hits daily target per practice session we update streak conditionally
-      if (!isTodayStreakIncrementDay) {
-        if (isYesterdayStreakIncrementDay || practiceUser.streak === 0) {
-          // User maintains streak
-          await this.usersService.updateStreak(practiceUser.id, practiceUser.streak + 1, today);
-        } else {
-          // User breaks streak
-          await this.usersService.updateStreak(practiceUser.id, 1, today);
-        }
+    // If user hits daily target per practice session we update streak conditionally
+    if (!isTodayStreakIncrementDay) {
+      if (isYesterdayStreakIncrementDay || user.streak === 0) {
+        // User upgrades streak
+        return { streak: user.streak + 1, lastStreakIncrementDate: today };
+      } else {
+        // User breaks streak
+        return { streak: 1, lastStreakIncrementDate: today };
       }
     }
 
-    return { success: true, message: 'Congratulations! Practice completed successfully.' };
+    // User streak remains unchanged
+    return { streak: user.streak, lastStreakIncrementDate: user.lastStreakIncrementDate };
   }
 
   async updateTotalWords(
@@ -149,6 +146,11 @@ export class PracticeService {
       practice.totalWords = updateTotalWordsDto.totalWords;
       if (updateTotalWordsDto.totalWords === practice.user.dailyTarget) {
         practice.isCompleted = true;
+
+        const { streak, lastStreakIncrementDate } = this.getUserNextStreak(practice.user);
+        practice.user.streak = streak;
+        practice.user.lastStreakIncrementDate = lastStreakIncrementDate;
+        await entityManager.save(User, practice.user);
       }
 
       if (!practice.vocabularies) practice.vocabularies = [];
@@ -156,7 +158,6 @@ export class PracticeService {
 
       if (!alreadyLinked) {
         practice.vocabularies.push(vocabulary);
-        vocabulary.practiceId = practice.id;
       }
 
       vocabulary.isMastered = true;
@@ -201,7 +202,7 @@ export class PracticeService {
   }
 
   /**
-   * Remove a practice session and their related data
+   * Remove a practice session and its related data
    */
   async remove(sessionId: string) {
     return await this.dataSource.transaction(async (entityManager) => {
@@ -224,7 +225,6 @@ export class PracticeService {
           { id: In(vocabulariesIds) },
           {
             isMastered: false,
-            practiceId: undefined,
           },
         );
       }

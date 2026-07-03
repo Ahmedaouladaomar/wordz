@@ -7,6 +7,7 @@ import { WordsList } from "@/components/words-list";
 import { Colors } from "@/constants/theme";
 import { useAuth } from "@/providers/AuthProvider";
 import { vocabularyService } from "@/services/vocabularyService";
+import { SortOrder } from "@/types/api";
 import { Vocabulary } from "@/types/vocabulary";
 import { Plus, Search } from "@tamagui/lucide-icons";
 import React, { useEffect, useState } from "react";
@@ -43,7 +44,7 @@ export default function WordsScreen() {
 
       const response = await vocabularyService.getVocabularies({
         orderBy: "createdAt",
-        sortOrder: "DESC",
+        sortOrder: SortOrder.DESC,
         take: DEFAULT_TAKE,
       });
       if (response.success && response.data) {

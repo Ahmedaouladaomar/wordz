@@ -1,100 +1,81 @@
-import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
-import { ImagePicker } from "@/components/ui/image-picker";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import { useAuth } from "@/providers/AuthProvider";
+import { User } from "@tamagui/lucide-icons";
 import React from "react";
 import { ScrollView, StyleSheet } from "react-native";
+import { Avatar, Text, View } from "tamagui";
 
 export default function ProfileScreen() {
   const { user } = useAuth();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <ThemedView style={styles.profileHeader}>
-          <ThemedView
-            style={[
-              styles.avatar,
-              { backgroundColor: isDark ? "#333" : "#e0e0e0" },
-            ]}
-          >
-            <ImagePicker onImageSelected={() => {}} />
-          </ThemedView>
-          <ThemedText style={styles.name}>
-            {user?.firstName} {user?.lastName}
-          </ThemedText>
-          <ThemedText style={styles.email}>{user?.email}</ThemedText>
-        </ThemedView>
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.profileHeader}>
+        <Avatar circular size="$5" bc="$brandPrimary" mb="$4">
+          <User size="$2" col="white" />
+        </Avatar>
 
-        <ThemedView style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>Statistics</ThemedText>
-          <ThemedView style={styles.statRow}>
-            <ThemedText style={styles.statLabel}>Total Words</ThemedText>
-            <ThemedText style={styles.statValue}>0</ThemedText>
-          </ThemedView>
-          <ThemedView style={styles.statRow}>
-            <ThemedText style={styles.statLabel}>Practice Sessions</ThemedText>
-            <ThemedText style={styles.statValue}>0</ThemedText>
-          </ThemedView>
-          <ThemedView style={styles.statRow}>
-            <ThemedText style={styles.statLabel}>Accuracy Rate</ThemedText>
-            <ThemedText style={styles.statValue}>-</ThemedText>
-          </ThemedView>
-        </ThemedView>
+        <Text style={styles.name}>
+          {user?.firstName} {user?.lastName}
+        </Text>
+        <Text style={styles.email}>{user?.email}</Text>
+      </View>
 
-        <ThemedView style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>Account</ThemedText>
-          <ThemedView style={styles.infoBox}>
-            <ThemedText style={styles.infoLabel}>Email</ThemedText>
-            <ThemedText style={styles.infoValue}>{user?.email}</ThemedText>
-          </ThemedView>
-          <ThemedView style={styles.infoBox}>
-            <ThemedText style={styles.infoLabel}>Member Since</ThemedText>
-            <ThemedText style={styles.infoValue}>
-              {user?.createdAt
-                ? new Date(user.createdAt).toLocaleDateString()
-                : "Unknown"}
-            </ThemedText>
-          </ThemedView>
-        </ThemedView>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle} col="$brandPrimary">
+          Statistics
+        </Text>
+        <View style={styles.statRow}>
+          <Text style={styles.statLabel}>Total Words</Text>
+          <Text style={styles.statValue}>{user?.totalWords || 0}</Text>
+        </View>
+        <View style={styles.statRow}>
+          <Text style={styles.statLabel}>Practice Sessions</Text>
+          <Text style={styles.statValue}>
+            {user?.totalPracticeSssions || 0}
+          </Text>
+        </View>
+      </View>
 
-        <ThemedView style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>About</ThemedText>
-          <ThemedText style={styles.aboutText}>
-            Wordz helps you build and practice your vocabulary with a simple,
-            effective learning system.
-          </ThemedText>
-        </ThemedView>
-      </ScrollView>
-    </ThemedView>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle} col="$brandPrimary">
+          Account
+        </Text>
+        <View style={styles.infoBox}>
+          <Text style={styles.infoLabel}>Email</Text>
+          <Text style={styles.infoValue}>{user?.email}</Text>
+        </View>
+        <View style={styles.infoBox}>
+          <Text style={styles.infoLabel}>Member Since</Text>
+          <Text style={styles.infoValue}>
+            {user?.createdAt
+              ? new Date(user.createdAt).toLocaleDateString()
+              : "Unknown"}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle} col="$brandPrimary">
+          About
+        </Text>
+        <Text style={styles.aboutText}>
+          Wordz helps you build and practice your vocabulary with a simple,
+          effective learning system.
+        </Text>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-  },
-  scrollContent: {
-    paddingVertical: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
   },
   profileHeader: {
     alignItems: "center",
-    marginBottom: 30,
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#007AFF",
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
+    paddingBottom: 35,
   },
   name: {
     fontSize: 22,
@@ -112,7 +93,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 12,
-    color: "#007AFF",
   },
   statRow: {
     flexDirection: "row",

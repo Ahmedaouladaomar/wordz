@@ -12,8 +12,10 @@ export class AuthUserDto {
   readonly sessionId!: string;
   readonly city?: string;
   readonly dailyTarget?: number;
+  readonly totalPracticeSessions?: number;
   readonly refreshToken!: string;
   readonly vocabularies?: any[];
+  readonly practices?: any[];
 
   constructor(user: AuthUserDto) {
     Object.assign(this, user);
@@ -22,6 +24,11 @@ export class AuthUserDto {
   @Expose()
   get totalWords(): number {
     return this.vocabularies?.filter((v) => v.isMastered)?.length || 0;
+  }
+
+  @Expose()
+  get totalPracticeSssions() {
+    return this.practices?.filter((p) => p.isCompleted)?.length || 0;
   }
 
   @Expose()
